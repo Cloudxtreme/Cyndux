@@ -86,8 +86,8 @@ public class server {
 				out.println("Are you registering or logging in?");
 				boolean notloggedin = true;
 				while (notloggedin) {
-					response = in.readLine().toLowerCase().toLowerCase();
-					if (response == null) {
+					response = in.readLine().toLowerCase();
+					if (response.equals(null)) {
 						return;
 					} else {
 						switch (response) {
@@ -95,7 +95,7 @@ public class server {
 							out.println("Enter your details in this format:[Username],[Password]");
 							while (true) {
 								response = in.readLine();
-								if (response == null) {
+								if (response.equals(null)) {
 									return;
 								} else {
 									String[] userpass = response.split(",");
@@ -140,7 +140,7 @@ public class server {
 							out.println("Enter your details in this format:[Username],[Password]");
 							while (true) {
 								response = in.readLine();
-								if (response == null) {
+								if (response.equals(null)) {
 									return;
 								} else {
 									String[] userpass = response.split(",");
@@ -348,7 +348,7 @@ public class server {
 					// Print out whats in the sector
 					while (true) {
 						response = in.readLine();
-						if (response == null) {
+						if (response.equals(null)) {
 							return;
 						}
 						switch (response.toLowerCase()) {
