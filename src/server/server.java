@@ -49,12 +49,6 @@ public class server {
 			listener.close();
 		}
 	}
-
-	/**
-	 * A handler thread class. Handlers are spawned from the listening loop and
-	 * are responsible for a dealing with a single client and broadcasting its
-	 * messages.
-	 */
 	private static class Handler extends Thread {
 		private String response;
 		private Socket socket;
