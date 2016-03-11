@@ -1,3 +1,4 @@
+package com.github.daphexion.cyndux;
 
 /*WARNING, THIS IS WRITTEN WHEN I WAS 13,
 WHEN I HAD NO UNDERSTANDING OF OPTIMISATION
@@ -10,7 +11,6 @@ BY A VELOCIRAPTOR*/
 
 //Import some stuff. One is for the Socket Connection, the other is for writing stuff.
 
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -19,6 +19,8 @@ import java.net.Socket;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Random;
+import com.github.daphexion.cyndux.players.*;
+import com.github.daphexion.cyndux.sectors.*;
 
 public class Main {
 	/**
@@ -38,7 +40,7 @@ public class Main {
 				new Handler(server.listener.accept()).start();
 			}
 		} finally {
-			server.listener.close();	 
+			server.listener.close();
 		}
 	}
 
@@ -46,10 +48,6 @@ public class Main {
 		private String response;
 		private Socket socket;
 		private BufferedReader in;
-
-		private enum Screen {
-			MAIN, MAP, GOTO, WARP
-		}
 
 		/**
 		 * Constructs a handler thread, squirreling away the socket. All the
@@ -90,6 +88,10 @@ public class Main {
 									return;
 								} else {
 									String[] userpass = response.split(",");
+									if (userpass.length <= 2) {
+										player.send("Please enter a password!");
+										break;
+									}
 									player = new Player(userpass[0], out);
 									if (player.load().equals("NOTEXIST")) {
 										player.send("We could not find your account!");
@@ -128,6 +130,10 @@ public class Main {
 									return;
 								} else {
 									String[] userpass = response.split(",");
+									if (userpass.length <= 2) {
+										player.send("Please enter a password!");
+										break;
+									}
 									player = new Player(userpass[0], out);
 									if (!player.register(userpass[1]).equals("ALREADYEXIST")) {
 										synchronized (players) {
@@ -157,8 +163,7 @@ public class Main {
 					}
 				}
 				player.send("Logged in as " + player.getUsername());
-				Screen screen = Screen.MAIN;
-				int mapcursor = 5;
+				byte mapcursor = 5;
 				while (true) {
 					Sector sector = new Sector(Integer.parseInt(player.getLocation()));
 					Properties sectorprop = sector.getProperties();
@@ -173,7 +178,7 @@ public class Main {
 					int mapsw = maploc + 99;
 					int mapnw = maploc - 101;
 					// Dis where da magic happens.
-					switch (screen) {
+					switch (player.getScreen()) {
 					case MAIN:
 						player.send("You are now in " + player.getLocation());
 
@@ -238,7 +243,6 @@ public class Main {
 						if (sectorprop.getProperty("nebula") != null) {
 							player.send("● A Nebula");
 						}
-
 						break;
 					case MAP: // TODO EDGES SECTORS
 						player.send("╔═════╦═════╦═════╗");
@@ -344,48 +348,57 @@ public class Main {
 						if (response == null) {
 							return;
 						}
-						switch (response.toLowerCase()) {
+						switch (response.toLowerCase().substring(0, response.indexOf(" "))) {
 						case "y":
-							switch (screen) {
+							switch (player.getScreen()) {
 							case WARP:
+								int warp = 0;
 								switch (mapcursor) {
 								case 1:
-									player.setLocation(mapnw);
+									warp = mapnw;
 									break;
 								case 2:
-									player.setLocation(mapn);
+									warp = mapn;
 									break;
 								case 3:
-									player.setLocation(mapne);
+									warp = mapne;
 									break;
 								case 4:
-									player.setLocation(mapw);
-									break;
-								case 5:
-									player.send("You are already at this sector!");
+									warp = mapw;
 									break;
 								case 6:
-									player.setLocation(mape);
+									warp = mape;
 									break;
 								case 7:
-									player.setLocation(mapsw);
+									warp = mapsw;
 									break;
 								case 8:
-									player.setLocation(maps);
+									warp = maps;
 									break;
 								case 9:
-									player.setLocation(mapse);
+									warp = mapse;
 									break;
 								}
-								screen = Screen.MAP;
+								// TODO Ship warp delay.
+								for (Player plyr : players) {
+									if (plyr.getLocation().equals(player.getLocation()) && plyr != player) {
+										plyr.send(player.getUsername() + " just left your sector!");
+									} else {
+										if (plyr.getLocation().equals(warp)) {
+											plyr.send(player.getUsername() + " just warped to your sector!");
+										}
+									}
+								}
+								player.setLocation(warp);
+								player.setScreen(Screen.MAIN);
 							default:
 								break;
 							}
 							break;
 						case "n":
-							switch (screen) {
+							switch (player.getScreen()) {
 							case WARP:
-								screen = Screen.MAP;
+								player.setScreen(Screen.MAP);
 								mapcursor = 5;
 								break;
 							default:
@@ -393,10 +406,57 @@ public class Main {
 							}
 							break;
 						case "map":
-							screen = Screen.MAP;
+							mapcursor = 5;
+							player.setScreen(Screen.MAP);
+							break;
+						case "chat":
+							switch (response.replace("chat ", "")) {
+							case "sector":
+								player.setChatStatus(ChatMode.SECTOR);
+								break;
+							case "on":
+								player.setChatStatus(ChatMode.SYSTEM);
+								break;
+							case "off":
+								player.setChatStatus(ChatMode.NOTINCHAT);
+								break;
+							case "group":
+								player.setChatStatus(ChatMode.GROUP);
+								break;
+							default:
+								if (player.getChatStatus().equals(ChatMode.NOTINCHAT)) {
+									player.setChatStatus(ChatMode.SYSTEM);
+								} else {
+									player.setChatStatus(ChatMode.NOTINCHAT);
+								}
+								break;
+							}
+							break;
+						case "say":
+							switch (player.getChatStatus()){
+							case NOTINCHAT:
+								break;
+							case SYSTEM:
+								for (Player plyr : players) {
+									if (plyr.getChatStatus().equals(ChatMode.SYSTEM) && plyr != player) {
+										plyr.send(player.getUsername() + ">" + response.replace("say ", ""));
+									}
+								}
+								break;
+							case SECTOR:
+								for (Player plyr : players) {
+									if (plyr.getChatStatus().equals(ChatMode.SECTOR) && plyr != player && plyr.getLocation().equals(player.getLocation())) {
+										plyr.send(player.getUsername() + ">" + response.replace("say ", ""));
+									}
+								}
+								break;
+							case GROUP:
+								//TODO THE ENTIRE CORP THING
+								break;
+							}
 							break;
 						case "up":
-							if (screen != Screen.MAP) {
+							if (player.getScreen() != Screen.MAP) {
 								player.send("Sorry captain, I did not understand.");
 								break;
 							} else {
@@ -414,11 +474,10 @@ public class Main {
 									mapcursor -= 3;
 									break;
 								}
-								mapcursor = 5;
 							}
 							break;
 						case "down":
-							if (screen != Screen.MAP) {
+							if (player.getScreen() != Screen.MAP) {
 								player.send("Sorry captain, I did not understand.");
 								break;
 							} else {
@@ -439,7 +498,7 @@ public class Main {
 							}
 							break;
 						case "left":
-							if (screen != Screen.MAP) {
+							if (player.getScreen() != Screen.MAP) {
 								player.send("Sorry captain, I did not understand.");
 								break;
 							} else {
@@ -460,7 +519,7 @@ public class Main {
 							}
 							break;
 						case "right":
-							if (screen != Screen.MAP) {
+							if (player.getScreen() != Screen.MAP) {
 								player.send("Sorry captain, I did not understand.");
 								break;
 							} else {
@@ -485,11 +544,12 @@ public class Main {
 							for (Player plyr : players) {
 								player.send("● " + plyr.getUsername());
 							}
+
 							break;
 						case "warp":
-							switch (screen) {
+							switch (player.getScreen()) {
 							case MAP:
-								screen = Screen.WARP;
+								player.setScreen(Screen.WARP);
 								break;
 							default:
 								out.println("Sorry captain, I did not understand.");
@@ -497,9 +557,9 @@ public class Main {
 							}
 							break;
 						case "back":
-							switch(screen){
+							switch (player.getScreen()) {
 							case MAP:
-								screen = Screen.MAIN;
+								player.setScreen(Screen.MAP);
 								break;
 							default:
 								out.println("Sorry captain, I did not understand.");
@@ -513,6 +573,7 @@ public class Main {
 						break;
 					}
 				}
+
 			} catch (IOException e) {
 				System.out.println(e);
 			} finally {
@@ -529,8 +590,8 @@ public class Main {
 				}
 			}
 		}
-
 	}
+
 	public static String sectorThing(int loc) {
 		if (loc >= 10) {
 			if (loc >= 100) {

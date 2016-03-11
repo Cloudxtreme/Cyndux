@@ -1,3 +1,4 @@
+package com.github.daphexion.cyndux;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -10,6 +11,7 @@ public class Server {
 	public ServerSocket listener;
 	private int port;
 	Properties prop = new Properties();
+
 	public Server() {
 		initializeServer();
 		System.out.println("Cyndux Server is running.");
@@ -25,9 +27,10 @@ public class Server {
 				port++;
 			} catch (IOException e) {
 				e.printStackTrace();
-			} 
+			}
 		}
 	}
+
 	private void initializeServer() {
 		try {
 			File sectorFolder = new File("./sectors");
@@ -54,7 +57,8 @@ public class Server {
 		return;
 
 	}
-	public int getPort(){
+
+	public int getPort() {
 		return port;
 	}
 }

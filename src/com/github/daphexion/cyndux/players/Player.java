@@ -1,3 +1,4 @@
+package com.github.daphexion.cyndux.players;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -9,15 +10,20 @@ public class Player {
 	private String username;
 	private File file;
 	private Properties playerProp = new Properties();
-	//private Properties ship = new Properties();
+	private String ship;
+	private ChatMode chatMode;
 	PrintWriter out;
+	private Screen screen = Screen.MAIN;
 
 	public Player(String n, PrintWriter o) {
 		username = n;
 		out = o;
 		file = new File("./users/" + this.username + ".properties");
 	}
-
+	
+	public String getShip(){
+		return ship;
+	}
 	public String load() {
 		if (!file.exists()) {
 			return "NOTEXIST";
@@ -35,7 +41,7 @@ public class Player {
 	}
 
 	public boolean authenticate(String password) {
-		if (!playerProp.getProperty("password").equals(password)) {
+		if (!playerProp.getProperty("password").equals(Integer.toString(password.hashCode()))) {
 			return false;
 		} else {
 			return true;
@@ -69,10 +75,11 @@ public class Player {
 				prop.load(input);
 				FileOutputStream output = new FileOutputStream(file);
 				playerProp.setProperty("money", prop.getProperty("starting.money"));
-				playerProp.setProperty("password", password);
+				playerProp.setProperty("password", Integer.toString(password.hashCode()));
 				playerProp.setProperty("location", "");
 				playerProp.setProperty("ship", prop.getProperty("starting.ship"));
 				playerProp.store(output, null);
+				this.ship = playerProp.getProperty("ship");
 				output.flush();
 				output.close();
 				return "OK";
@@ -89,6 +96,20 @@ public class Player {
 
 	public void send(Object o) {
 		out.println(o);
+		return;
+	}
+	public Screen getScreen(){
+		return this.screen;
+	}
+	public void setScreen(Screen state){
+		this.screen = state;
+		return;
+	}
+	public void setChatStatus(ChatMode mode){
+		chatMode = mode;
+	}
+	public ChatMode getChatStatus(){
+		return chatMode;
 	}
 }
 
