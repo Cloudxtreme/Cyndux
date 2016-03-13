@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Properties;
 
+import com.github.daphexion.cyndux.sectors.Map;
+
 public class Player {
 	private String username;
 	private File file;
@@ -14,11 +16,15 @@ public class Player {
 	private ChatMode chatMode;
 	PrintWriter out;
 	private Screen screen = Screen.MAIN;
-
+	private byte mapcursor = 5;
 	public Player(String n, PrintWriter o) {
 		username = n;
 		out = o;
 		file = new File("./users/" + this.username + ".properties");
+	}
+	
+	public void printMap(){
+		Map.printMap(this);
 	}
 	
 	public String getShip(){
@@ -110,6 +116,9 @@ public class Player {
 	}
 	public ChatMode getChatStatus(){
 		return chatMode;
+	}
+	public byte getMapCursor(){
+		return mapcursor;
 	}
 }
 

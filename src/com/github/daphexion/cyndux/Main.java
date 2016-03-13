@@ -165,18 +165,19 @@ public class Main {
 				player.send("Logged in as " + player.getUsername());
 				byte mapcursor = 5;
 				while (true) {
-					Sector sector = new Sector(Integer.parseInt(player.getLocation()));
-					Properties sectorprop = sector.getProperties();
 					int maploc = Integer.parseInt(player.getLocation());
 					int mapn = (maploc - 100);
+					int maps = maploc + 100;
 					int mape = maploc + 1; // how the fuck does increment
 											// operators work
 					int mapw = maploc - 1;
-					int maps = maploc + 100;
-					int mapne = maploc - 99;
-					int mapse = maploc + 101;
-					int mapsw = maploc + 99;
-					int mapnw = maploc - 101;
+					int mapne = mapn + 1;
+					int mapse = maps + 1;
+					int mapsw = maps - 1;
+					int mapnw = mapn - 1;
+					int warp = 0;
+					Sector.initializeSector(Integer.parseInt(player.getLocation()));
+					Properties sectorprop = Sector.getProperties(Integer.parseInt(player.getLocation()));
 					// Dis where da magic happens.
 					switch (player.getScreen()) {
 					case MAIN:
@@ -245,68 +246,9 @@ public class Main {
 						}
 						break;
 					case MAP: // TODO EDGES SECTORS
-						player.send("╔═════╦═════╦═════╗");
-						player.send(
-								"║" + sectorThing(mapnw) + "║" + sectorThing(mapn) + "║" + sectorThing(mapne) + "║");
-						switch (mapcursor) {
-
-						case 1:
-							player.send("║  ●  ║     ║     ║");
-							break;
-						case 2:
-							player.send("║     ║  ●  ║     ║");
-							break;
-						case 3:
-							player.send("║     ║     ║  ●  ║");
-							break;
-						default:
-							player.send("║     ║     ║     ║");
-							break;
-
-						}
-						player.send("╠═════╬═════╬═════╣");
-						player.send(
-								"║" + sectorThing(mapw) + "║" + sectorThing(maploc) + "║" + sectorThing(mape) + "║");
-						switch (mapcursor) {
-
-						case 4:
-							player.send("║  ●  ║     ║     ║");
-							break;
-						case 5:
-							player.send("║     ║  ●  ║     ║");
-							break;
-						case 6:
-							player.send("║     ║     ║  ●  ║");
-							break;
-						default:
-							player.send("║     ║     ║     ║");
-							break;
-						}
-						player.send("╠═════╬═════╬═════╣");
-						player.send(
-								"║" + sectorThing(mapsw) + "║" + sectorThing(maps) + "║" + sectorThing(mapse) + "║");
-						switch (mapcursor) {
-
-						case 7:
-							player.send("║  ●  ║     ║     ║");
-							break;
-						case 8:
-							player.send("║     ║  ●  ║     ║");
-							break;
-						case 9:
-							player.send("║     ║     ║  ●  ║");
-							break;
-						default:
-							player.send("║     ║     ║     ║");
-							break;
-
-						}
-						player.send("╚═════╩═════╩═════╝");
-						player.send("To move the cursor, type up, down, left or right.");
-						player.send("To warp to where your cursor is, type warp.");
+						player.printMap();
 						break;
 					case WARP:
-						int warp;
 						switch (mapcursor) {
 						case 1:
 							warp = mapnw;
@@ -352,7 +294,7 @@ public class Main {
 						case "y":
 							switch (player.getScreen()) {
 							case WARP:
-								int warp = 0;
+								boolean warped = true;
 								switch (mapcursor) {
 								case 1:
 									warp = mapnw;
@@ -365,6 +307,10 @@ public class Main {
 									break;
 								case 4:
 									warp = mapw;
+									break;
+								case 5:
+									player.send("You are already here!");
+									warped = false;
 									break;
 								case 6:
 									warp = mape;
@@ -380,16 +326,18 @@ public class Main {
 									break;
 								}
 								// TODO Ship warp delay.
-								for (Player plyr : players) {
-									if (plyr.getLocation().equals(player.getLocation()) && plyr != player) {
-										plyr.send(player.getUsername() + " just left your sector!");
-									} else {
-										if (plyr.getLocation().equals(warp)) {
-											plyr.send(player.getUsername() + " just warped to your sector!");
+								if (warped) {
+									for (Player plyr : players) {
+										if (plyr.getLocation().equals(player.getLocation()) && plyr != player) {
+											plyr.send(player.getUsername() + " just left your sector!");
+										} else {
+											if (plyr.getLocation().equals(warp)) {
+												plyr.send(player.getUsername() + " just warped to your sector!");
+											}
 										}
 									}
+									player.setLocation(warp);
 								}
-								player.setLocation(warp);
 								player.setScreen(Screen.MAIN);
 							default:
 								break;
@@ -433,7 +381,7 @@ public class Main {
 							}
 							break;
 						case "say":
-							switch (player.getChatStatus()){
+							switch (player.getChatStatus()) {
 							case NOTINCHAT:
 								break;
 							case SYSTEM:
@@ -445,13 +393,14 @@ public class Main {
 								break;
 							case SECTOR:
 								for (Player plyr : players) {
-									if (plyr.getChatStatus().equals(ChatMode.SECTOR) && plyr != player && plyr.getLocation().equals(player.getLocation())) {
+									if (plyr.getChatStatus().equals(ChatMode.SECTOR) && plyr != player
+											&& plyr.getLocation().equals(player.getLocation())) {
 										plyr.send(player.getUsername() + ">" + response.replace("say ", ""));
 									}
 								}
 								break;
 							case GROUP:
-								//TODO THE ENTIRE CORP THING
+								// TODO THE ENTIRE CORP THING
 								break;
 							}
 							break;
@@ -542,7 +491,7 @@ public class Main {
 						case "online":
 							player.send("Amount of people online." + players.size());
 							for (Player plyr : players) {
-								player.send("● " + plyr.getUsername());
+								player.send("â—� " + plyr.getUsername());
 							}
 
 							break;
@@ -590,24 +539,5 @@ public class Main {
 				}
 			}
 		}
-	}
-
-	public static String sectorThing(int loc) {
-		if (loc >= 10) {
-			if (loc >= 100) {
-				if (loc >= 1000) {
-					if (loc == 10000) {
-						return Integer.toString(loc);
-					}
-					return " " + Integer.toString(loc);
-
-				}
-				return " " + Integer.toString(loc) + " ";
-			}
-
-			return "  " + Integer.toString(loc) + " ";
-		}
-		return "  " + Integer.toString(loc) + "  ";
-
 	}
 }
