@@ -19,8 +19,6 @@ public class Server {
 		while (true) {
 			try {
 				listener = new ServerSocket(port);
-
-				System.out.println("Using " + port + " instead!");
 				break;
 			} catch (BindException e) {
 				System.out.println("Port " + port + " already in use!");
@@ -29,6 +27,7 @@ public class Server {
 				e.printStackTrace();
 			}
 		}
+		System.out.println("Using " + port + " instead!");
 	}
 
 	private void initializeServer() {

@@ -1,11 +1,11 @@
 package com.github.daphexion.cyndux.players;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Properties;
-
 import com.github.daphexion.cyndux.sectors.Map;
 
 public class Player {
@@ -17,19 +17,22 @@ public class Player {
 	PrintWriter out;
 	private Screen screen = Screen.MAIN;
 	private byte mapcursor = 5;
+	public boolean cannotChat;
+
 	public Player(String n, PrintWriter o) {
 		username = n;
 		out = o;
 		file = new File("./users/" + this.username + ".properties");
 	}
-	
-	public void printMap(){
+
+	public void printMap() {
 		Map.printMap(this);
 	}
-	
-	public String getShip(){
+
+	public String getShip() {
 		return ship;
 	}
+
 	public String load() {
 		if (!file.exists()) {
 			return "NOTEXIST";
@@ -104,21 +107,39 @@ public class Player {
 		out.println(o);
 		return;
 	}
-	public Screen getScreen(){
+
+	public void sendChat(Object o) {
+		while(true){
+			if (!cannotChat){
+				out.println(o);
+				break;
+			}
+		}
+		return;
+	}
+
+	public Screen getScreen() {
 		return this.screen;
 	}
-	public void setScreen(Screen state){
+
+	public void setScreen(Screen state) {
 		this.screen = state;
 		return;
 	}
-	public void setChatStatus(ChatMode mode){
+
+	public void setChatStatus(ChatMode mode) {
 		chatMode = mode;
 	}
-	public ChatMode getChatStatus(){
+
+	public ChatMode getChatStatus() {
 		return chatMode;
 	}
-	public byte getMapCursor(){
+
+	public byte getMapCursor() {
 		return mapcursor;
 	}
-}
 
+	public void setMapCursor(byte mapcursor) {
+		this.mapcursor = mapcursor;
+	}
+}

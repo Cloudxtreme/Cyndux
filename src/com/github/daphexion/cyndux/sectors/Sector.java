@@ -6,15 +6,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Vector;
+
+import com.github.daphexion.cyndux.Main;
+import com.github.daphexion.cyndux.players.Player;
 
 public class Sector {
-
-	@SuppressWarnings("unused")
 	public static synchronized void initializeSector(int sectorNum) {
 		File sector = new File("./sectors/" + Integer.toString(sectorNum) + ".properties");
 		if (!sector.exists()) {
 			Random sectorRand = new Random();
-			int PlanetsAmount = sectorRand.nextInt(8);
+			int PlanetsAmount = sectorRand.nextInt(7);
 			boolean station = false;
 			boolean star = false;
 			int wormholes = 0;
@@ -61,7 +63,7 @@ public class Sector {
 				if (solarSystemChance >= 71) {
 					// THERE IS A SOLARSYSTEM
 					// Generate planets
-					for (int i = 0; i < (PlanetsAmount - 1); i++) {
+					for (int i = 0; i < (PlanetsAmount); i++) {
 						int planetType = sectorRand.nextInt(13);
 						switch (planetType) {
 						case 1:
@@ -176,9 +178,9 @@ public class Sector {
 					sect.setProperty("nebula", "large");
 					break;
 				}
-				String size = planetSize();
-				for (int i = 0; i < (planets.length - 1); i++) {
+				for (int i = 0; i < (planets.length); i++) {
 					String num = Integer.toString(i);
+					String size = planetSize();
 					switch (planets[i]) {
 					case 1:
 						sect.setProperty("planet." + num, "terran" + "," + size);
@@ -237,23 +239,23 @@ public class Sector {
 		int sizeChance = planetRand.nextInt(101);
 		if (sizeChance <= 10) {
 			// Tiny
-			size = "TINY";
+			size = "tiny";
 		}
 		if (sizeChance >= 11 && sizeChance <= 30) {
 			// Small
-			size = "SMALL";
+			size = "small";
 		}
 		if (sizeChance >= 31 && sizeChance <= 70) {
 			// Medium
-			size = "MEDIUM";
+			size = "medium";
 		}
 		if (sizeChance >= 71 && sizeChance <= 90) {
 			// Large
-			size = "LARGE";
+			size = "large";
 		}
 		if (sizeChance >= 91) {
 			// Huge
-			size = "HUGE";
+			size = "huge";
 		}
 		return size;
 	}
@@ -268,6 +270,97 @@ public class Sector {
 			e.printStackTrace();
 		}
 		return sectorprop;
+	}
+	public static Vector<String> getObjects(int sectorNum){
+		Properties sectorprop = new Properties();
+		Vector<String> objects = new Vector<String>();
+		try {
+			FileInputStream sectorinput = new FileInputStream(new File("./sectors/" + Integer.toString(sectorNum) + ".properties"));
+			sectorprop.load(sectorinput);
+			sectorinput.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}	
+		if (sectorprop.getProperty("station.exists") != null) {
+			objects.addElement("station");
+		}
+		if (sectorprop.getProperty("wormholes.1") != null) {
+			objects.addElement("wormhole");
+		}
+		if (sectorprop.getProperty("wormholes.2") != null) {
+			objects.addElement("another wormhole");
+		}
+		if (sectorprop.getProperty("asteroidbelt") != null) {
+			switch (sectorprop.getProperty("asteroidbelt")) {
+			case "small":
+				objects.addElement("small asteroid belt");
+				break;
+			case "medium":
+				objects.addElement("medium asteroid belt");
+				break;
+			case "large":
+				objects.addElement("large asteroid belt");
+				break;
+			}
+		}
+		if (sectorprop.getProperty("star.exists") != null) {
+			objects.addElement("star");
+		}
+		if (sectorprop.getProperty("nebula") != null) {
+			switch (sectorprop.getProperty("nebula")) {
+			case "small":
+				objects.addElement("small nebula");
+				break;
+			case "medium":
+				objects.addElement("medium nebula");
+				break;
+			case "large":
+				objects.addElement("large nebula");
+				break;
+			}
+		}
+		for(int i=0;i<7;i++){
+			String planet = "";
+			if (sectorprop.getProperty("planet."+i) != null) {
+				String[] details = sectorprop.getProperty("planet."+i).toLowerCase().split(",");
+				switch(details[1]){
+				case "tiny":
+					planet = "tiny ";
+					break;
+				case "small":
+					planet = "small ";
+					break;
+				case "medium":
+					planet = "medium ";
+					break;
+				case "large":
+					planet = "large ";
+					break;
+				case "huge":
+					planet = "huge ";
+					break;
+				default:
+					planet = "";
+					break;
+				}
+				planet += details[0] + " planet";
+				objects.addElement(planet);
+			}
+		}
+		Vector<Player> players = getPlayersInSector(sectorNum);
+		for (Player plyr : players){
+			objects.addElement("ship owned by "+plyr.getUsername());
+		}
+		return objects;
+	}
+	public static Vector<Player> getPlayersInSector(int sectorNum){
+		Vector<Player> players = new Vector<Player>();
+		for (Player plyr : Main.players) {
+			if (plyr.getLocation().equals(Integer.toString(sectorNum))) {
+				players.addElement(plyr);
+			}
+		}
+		return players;
 	}
 
 }

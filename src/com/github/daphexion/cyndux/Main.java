@@ -12,6 +12,8 @@ import java.net.Socket;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Vector;
+
 import com.github.daphexion.cyndux.players.*;
 import com.github.daphexion.cyndux.sectors.*;
 
@@ -19,7 +21,7 @@ public class Main {
 	/**
 	 * The port that the server listens on.
 	 */
-	private static HashSet<Player> players = new HashSet<Player>();
+	public static HashSet<Player> players = new HashSet<Player>();
 	static Server server;
 
 	/**
@@ -80,11 +82,11 @@ public class Main {
 								if (response == null) {
 									return;
 								} else {
-									String[] userpass = response.split(",");
-									if (userpass.length <= 2) {
-										player.send("Please enter a password!");
+									if (!response.contains(",")) {
+										out.println("Please enter a password!");
 										break;
 									}
+									String[] userpass = response.split(",");
 									player = new Player(userpass[0], out);
 									if (player.load().equals("NOTEXIST")) {
 										player.send("We could not find your account!");
@@ -122,11 +124,11 @@ public class Main {
 								if (response == null) {
 									return;
 								} else {
-									String[] userpass = response.split(",");
-									if (userpass.length <= 2) {
-										player.send("Please enter a password!");
+									if (!response.contains(",")) {
+										out.println("Please enter a password!");
 										break;
 									}
+									String[] userpass = response.split(",");
 									player = new Player(userpass[0], out);
 									if (!player.register(userpass[1]).equals("ALREADYEXIST")) {
 										synchronized (players) {
@@ -156,7 +158,6 @@ public class Main {
 					}
 				}
 				player.send("Logged in as " + player.getUsername());
-				byte mapcursor = 5;
 				while (true) {
 					int maploc = Integer.parseInt(player.getLocation());
 					int mapn = (maploc - 100);
@@ -175,48 +176,11 @@ public class Main {
 					switch (player.getScreen()) {
 					case MAIN:
 						player.send("You are now in " + player.getLocation());
-
-						if (sectorprop.getProperty("station.exists") != null) {
-							player.send("You see a station.");
+						player.send("You see a:");
+						Vector<String>objects = Sector.getObjects(Integer.parseInt(player.getLocation()));
+						for (String object : objects){
+							player.send("● "+object);
 						}
-						if (sectorprop.getProperty("wormholes.1") != null) {
-							player.send("You see a wormhole.");
-						}
-						if (sectorprop.getProperty("wormholes.2") != null) {
-							player.send("You see another wormhole.");
-						}
-						if (sectorprop.getProperty("asteroidbelt") != null) {
-							switch (sectorprop.getProperty("asteroidbelt")) {
-							case "small":
-								player.send("You see a small asteroid belt");
-								break;
-							case "medium":
-								player.send("You see a medium asteroid belt");
-								break;
-							case "large":
-								player.send("You see a large asteroid belt");
-								break;
-							}
-						}
-						if (sectorprop.getProperty("star.exists") != null) {
-							player.send("You see a star.");
-						}
-						if (sectorprop.getProperty("nebula") != null) {
-							switch (sectorprop.getProperty("nebula")) {
-							case "small":
-								player.send("You see a small nebula.");
-								break;
-							case "medium":
-								player.send("You see a medium nebula.");
-								break;
-							case "large":
-								player.send("You see a large nebula.");
-								break;
-							}
-						}
-						// You see another ship owned by someone named
-						// MichaelCera.
-						// If only...
 						player.send("What is your command?");
 
 						break;
@@ -242,7 +206,7 @@ public class Main {
 						player.printMap();
 						break;
 					case WARP:
-						switch (mapcursor) {
+						switch (player.getMapCursor()) {
 						case 1:
 							warp = mapnw;
 							break;
@@ -277,18 +241,18 @@ public class Main {
 						break;
 
 					}
-					// Print out whats in the sector
 					while (true) {
 						response = in.readLine();
 						if (response == null) {
 							return;
 						}
-						switch (response.toLowerCase().substring(0, response.indexOf(" "))) {
+						response = (response.contains(" ")) ? response.toLowerCase().substring(0, response.indexOf(" ")) : response.toLowerCase();
+						switch (response) {
 						case "y":
 							switch (player.getScreen()) {
 							case WARP:
 								boolean warped = true;
-								switch (mapcursor) {
+								switch (player.getMapCursor()) {
 								case 1:
 									warp = mapnw;
 									break;
@@ -320,13 +284,14 @@ public class Main {
 								}
 								// TODO Ship warp delay.
 								if (warped) {
-									for (Player plyr : players) {
-										if (plyr.getLocation().equals(player.getLocation()) && plyr != player) {
-											plyr.send(player.getUsername() + " just left your sector!");
-										} else {
-											if (plyr.getLocation().equals(warp)) {
-												plyr.send(player.getUsername() + " just warped to your sector!");
-											}
+									for (Player plyr : Sector.getPlayersInSector(Integer.parseInt(player.getLocation()))){
+										if (plyr != player) {
+											plyr.sendChat(player.getUsername() + " just left your sector!");
+										}
+									}
+									for (Player plyr : Sector.getPlayersInSector(warp)){
+										if (plyr != player) {
+											plyr.sendChat(player.getUsername() + " just warped to your sector!");
 										}
 									}
 									player.setLocation(warp);
@@ -340,14 +305,14 @@ public class Main {
 							switch (player.getScreen()) {
 							case WARP:
 								player.setScreen(Screen.MAP);
-								mapcursor = 5;
+								player.setMapCursor((byte)5);
 								break;
 							default:
 								break;
 							}
 							break;
 						case "map":
-							mapcursor = 5;
+							player.setMapCursor((byte)5);
 							player.setScreen(Screen.MAP);
 							break;
 						case "chat":
@@ -380,7 +345,7 @@ public class Main {
 							case SYSTEM:
 								for (Player plyr : players) {
 									if (plyr.getChatStatus().equals(ChatMode.SYSTEM) && plyr != player) {
-										plyr.send(player.getUsername() + ">" + response.replace("say ", ""));
+										plyr.sendChat(player.getUsername() + ">" + response.replace("say ", ""));
 									}
 								}
 								break;
@@ -388,7 +353,7 @@ public class Main {
 								for (Player plyr : players) {
 									if (plyr.getChatStatus().equals(ChatMode.SECTOR) && plyr != player
 											&& plyr.getLocation().equals(player.getLocation())) {
-										plyr.send(player.getUsername() + ">" + response.replace("say ", ""));
+										plyr.sendChat(player.getUsername() + ">" + response.replace("say ", ""));
 									}
 								}
 								break;
@@ -402,18 +367,18 @@ public class Main {
 								player.send("Sorry captain, I did not understand.");
 								break;
 							} else {
-								switch (mapcursor) {
+								switch (player.getMapCursor()) {
 								case 1:
-									mapcursor = 7;
+									player.setMapCursor((byte)7);
 									break;
 								case 2:
-									mapcursor = 8;
+									player.setMapCursor((byte)8);
 									break;
 								case 3:
-									mapcursor = 9;
+									player.setMapCursor((byte)9);
 									break;
 								default:
-									mapcursor -= 3;
+									player.setMapCursor((byte)(player.getMapCursor()-3));
 									break;
 								}
 							}
@@ -423,18 +388,18 @@ public class Main {
 								player.send("Sorry captain, I did not understand.");
 								break;
 							} else {
-								switch (mapcursor) {
+								switch (player.getMapCursor()) {
 								case 7:
-									mapcursor = 1;
+									player.setMapCursor((byte)1);
 									break;
 								case 8:
-									mapcursor = 2;
+									player.setMapCursor((byte)2);
 									break;
 								case 9:
-									mapcursor = 3;
+									player.setMapCursor((byte)3);
 									break;
 								default:
-									mapcursor += 3;
+									player.setMapCursor((byte)(player.getMapCursor()+3));
 									break;
 								}
 							}
@@ -444,18 +409,18 @@ public class Main {
 								player.send("Sorry captain, I did not understand.");
 								break;
 							} else {
-								switch (mapcursor) {
+								switch (player.getMapCursor()) {
 								case 1:
-									mapcursor = 3;
+									player.setMapCursor((byte)3);
 									break;
 								case 4:
-									mapcursor = 6;
+									player.setMapCursor((byte)6);
 									break;
 								case 7:
-									mapcursor = 9;
+									player.setMapCursor((byte)9);
 									break;
 								default:
-									mapcursor--;
+									player.setMapCursor((byte)(player.getMapCursor()-1));
 									break;
 								}
 							}
@@ -465,18 +430,18 @@ public class Main {
 								player.send("Sorry captain, I did not understand.");
 								break;
 							} else {
-								switch (mapcursor) {
+								switch (player.getMapCursor()) {
 								case 3:
-									mapcursor = 1;
+									player.setMapCursor((byte)1);
 									break;
 								case 6:
-									mapcursor = 4;
+									player.setMapCursor((byte)4);
 									break;
 								case 9:
-									mapcursor = 7;
+									player.setMapCursor((byte)7);
 									break;
 								default:
-									mapcursor++;
+									player.setMapCursor((byte)(player.getMapCursor()+1));
 									break;
 								}
 							}
@@ -484,7 +449,7 @@ public class Main {
 						case "online":
 							player.send("Amount of people online." + players.size());
 							for (Player plyr : players) {
-								player.send("â—� " + plyr.getUsername());
+								player.send("● " + plyr.getUsername());
 							}
 
 							break;
@@ -501,7 +466,7 @@ public class Main {
 						case "back":
 							switch (player.getScreen()) {
 							case MAP:
-								player.setScreen(Screen.MAP);
+								player.setScreen(Screen.MAIN);
 								break;
 							default:
 								out.println("Sorry captain, I did not understand.");
@@ -528,7 +493,7 @@ public class Main {
 				} catch (IOException e) {
 					e.printStackTrace();
 				} finally {
-					System.out.println(player.getUsername() + " logged out!");
+					//System.out.println(player.getUsername() + " logged out!");
 				}
 			}
 		}
