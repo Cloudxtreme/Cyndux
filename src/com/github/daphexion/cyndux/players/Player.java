@@ -18,11 +18,14 @@ public class Player {
 	private Screen screen = Screen.MAIN;
 	private byte mapcursor = 5;
 	public boolean cannotChat;
+	private LocationInSector locationInSector;
 
 	public Player(String n, PrintWriter o) {
 		username = n;
 		out = o;
 		file = new File("./users/" + this.username + ".properties");
+		cannotChat = false;
+		chatMode = ChatMode.NOTINCHAT;
 	}
 
 	public void printMap() {
@@ -118,7 +121,7 @@ public class Player {
 		return;
 	}
 
-	public Screen getScreen() {
+	public Screen getScreen(){ 
 		return this.screen;
 	}
 
@@ -129,6 +132,23 @@ public class Player {
 
 	public void setChatStatus(ChatMode mode) {
 		chatMode = mode;
+		switch(mode){
+		case GROUP:
+			send("Changed chat mode to GROUP");
+			break;
+		case NOTINCHAT:
+			send("Changed chat mode to off");
+			break;
+		case SECTOR:
+			send("Changed chat mode to SECTOR");
+			break;
+		case SYSTEM:
+			send("Changed chat mode to SYSTEM");
+			break;
+		default:
+			break;
+		}
+		return;
 	}
 
 	public ChatMode getChatStatus() {
@@ -141,5 +161,13 @@ public class Player {
 
 	public void setMapCursor(byte mapcursor) {
 		this.mapcursor = mapcursor;
+	}
+
+	public LocationInSector getLocationInSector() {
+		return locationInSector;
+	}
+
+	public void setLocationInSector(LocationInSector locationInSector) {
+		this.locationInSector = locationInSector;
 	}
 }

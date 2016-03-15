@@ -27,7 +27,7 @@ public class Server {
 				e.printStackTrace();
 			}
 		}
-		System.out.println("Using " + port + " instead!");
+		System.out.println("Using " + port + "!");
 	}
 
 	private void initializeServer() {

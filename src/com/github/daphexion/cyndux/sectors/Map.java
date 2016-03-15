@@ -14,6 +14,25 @@ public class Map {
 		int mapse = maps + 1;
 		int mapsw = maps - 1;
 		int mapnw = mapn - 1;
+		if (((maploc % 100) <= 1)){ //T R U L Y S P H E R I C A L B O I S
+			switch (maploc % 100){
+			case 0:
+				mape = maploc - 99;
+				break;
+			case 1:
+				mapw = maploc + 99;
+				break;
+			}
+		}else{
+			if (maploc <=100){
+				mapn = maploc + 50;
+			}
+			if (maploc >= 9900){
+				maps = maploc + 50;
+			}
+		} 
+
+		player.cannotChat=true;
 		player.send("╔═════╦═════╦═════╗");
 		player.send(
 				"║" + sectorThing(mapnw) + "║" + sectorThing(mapn) + "║" + sectorThing(mapne) + "║");
@@ -73,6 +92,7 @@ public class Map {
 		player.send("╚═════╩═════╩═════╝");
 		player.send("To move the cursor, type up, down, left or right.");
 		player.send("To warp to where your cursor is, type warp.");
+		player.cannotChat=false;
 	}
 	private static String sectorThing(int loc) {
 		if (loc >= 10) {
