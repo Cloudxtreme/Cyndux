@@ -6,12 +6,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Properties;
+
+import com.github.daphexion.cyndux.exceptions.PlayerAlreadyExists;
+import com.github.daphexion.cyndux.exceptions.PlayerDoesNotExist;
 import com.github.daphexion.cyndux.sectors.Map;
 
 public class Player {
 	private String username;
 	private File file;
-	private Properties playerProp = new Properties();
+	Properties playerProp = new Properties();
 	private String ship;
 	private ChatMode chatMode;
 	PrintWriter out;
@@ -36,20 +39,19 @@ public class Player {
 		return ship;
 	}
 
-	public String load() {
+	public void load() throws PlayerDoesNotExist {
 		if (!file.exists()) {
-			return "NOTEXIST";
+			throw new PlayerDoesNotExist(username);
 		} else {
 			try {
 				FileInputStream input = new FileInputStream(file);
 				playerProp.load(input);
 				input.close();
-				return "OK";
 			} catch (IOException e) {
 				e.printStackTrace();
-				return "FAIL";
 			}
 		}
+		return;
 	}
 
 	public boolean authenticate(String password) {
@@ -63,7 +65,6 @@ public class Player {
 	public String getLocation() {
 		return playerProp.getProperty("location");
 	}
-
 	public void setLocation(int loc) {
 		try {
 			FileOutputStream output = new FileOutputStream("./users/" + username + ".properties");
@@ -76,9 +77,9 @@ public class Player {
 		}
 	}
 
-	public String register(String password) {
+	public void register(String password) throws PlayerAlreadyExists {
 		if (file.exists()) {
-			return "ALREADYEXIST";
+			throw new PlayerAlreadyExists(username);
 		} else {
 			try {
 				file.createNewFile();
@@ -94,12 +95,11 @@ public class Player {
 				this.ship = playerProp.getProperty("ship");
 				output.flush();
 				output.close();
-				return "OK";
 			} catch (Exception e) {
 				e.printStackTrace();
-				return "FAIL";
 			}
 		}
+		return;
 	}
 
 	public String getUsername() {

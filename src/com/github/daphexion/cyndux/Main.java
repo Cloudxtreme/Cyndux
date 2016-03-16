@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Vector;
 
+import com.github.daphexion.cyndux.exceptions.*;
 import com.github.daphexion.cyndux.players.*;
 import com.github.daphexion.cyndux.sectors.*;
 
@@ -85,31 +86,33 @@ public class Main {
 									}
 									String[] userpass = response.split(",");
 									player = new Player(userpass[0], out);
-									if (player.load().equals("NOTEXIST")) {
-										player.send("We could not find your account!");
+									try {
+										player.load();
+									} catch (PlayerDoesNotExist e) {
+										player.send(e.getMessage());
 										player.send("Are you registering or logging in?");
 										break;
-									} else {
-										if (player.authenticate(userpass[1])) {
-											if (!players.contains(player)) {
-												synchronized (players) {
-													players.add(player);
-												}
-												System.out.println("IP " + socket.getRemoteSocketAddress()
-														+ " logged in as " + player.getUsername());
-											} else {
-												player.send("This user is already logged in!");
-												player.send("Are you registering or logging in?");
-												break;
+									}
+									if (player.authenticate(userpass[1])) {
+										if (!players.contains(player)) {
+											synchronized (players) {
+												players.add(player);
 											}
-											notloggedin = false;
-											break;
+											System.out.println("IP " + socket.getRemoteSocketAddress()
+													+ " logged in as " + player.getUsername());
 										} else {
-											player.send("Wrong password!");
+											player.send("This user is already logged in!");
 											player.send("Are you registering or logging in?");
 											break;
 										}
+										notloggedin = false;
+										break;
+									} else {
+										player.send("Wrong password!");
+										player.send("Are you registering or logging in?");
+										break;
 									}
+
 								}
 							}
 
@@ -127,19 +130,20 @@ public class Main {
 									}
 									String[] userpass = response.split(",");
 									player = new Player(userpass[0], out);
-									if (!player.register(userpass[1]).equals("ALREADYEXIST")) {
-										synchronized (players) {
-											players.add(player);
-										}
-										System.out.println("IP " + socket.getRemoteSocketAddress() + " logged in as "
-												+ player.getUsername());
-										notloggedin = false;
-										break;
-									} else {
-										player.send("This account already exists!");
+									try {
+										player.register(userpass[1]);
+									} catch (PlayerAlreadyExists e) {
+										player.send(e.getMessage());
 										player.send("Are you registering or logging in?");
 										break;
 									}
+									synchronized (players) {
+										players.add(player);
+									}
+									System.out.println("IP " + socket.getRemoteSocketAddress() + " logged in as "
+											+ player.getUsername());
+									notloggedin = false;
+									break;
 								}
 							}
 						}
@@ -259,8 +263,8 @@ public class Main {
 						if (response == null) {
 							return;
 						}
-						String firstresponse = (response.contains(" ")) ? response.toLowerCase().substring(0, response.indexOf(" "))
-								: response.toLowerCase();
+						String firstresponse = (response.contains(" "))
+								? response.toLowerCase().substring(0, response.indexOf(" ")) : response.toLowerCase();
 						switch (firstresponse) {
 						case "y":
 							switch (player.getScreen()) {
@@ -350,7 +354,7 @@ public class Main {
 							}
 							break;
 						case "say":
-							if (!response.contains(" ")){
+							if (!response.contains(" ")) {
 								player.send("Enter something to say!");
 								break;
 							}
@@ -361,7 +365,8 @@ public class Main {
 							case SYSTEM:
 								for (Player plyr : players) {
 									if (plyr.getChatStatus().equals(ChatMode.SYSTEM) && plyr != player) {
-										plyr.sendChat(player.getUsername() + "> " + (response.substring(response.indexOf(" ")+1)));
+										plyr.sendChat(player.getUsername() + "> "
+												+ (response.substring(response.indexOf(" ") + 1)));
 									}
 								}
 								break;
@@ -369,7 +374,8 @@ public class Main {
 								for (Player plyr : players) {
 									if (plyr.getChatStatus().equals(ChatMode.SECTOR) && plyr != player
 											&& plyr.getLocation().equals(player.getLocation())) {
-										plyr.sendChat(player.getUsername() + "> " + (response.substring(response.indexOf(" ")+1)));
+										plyr.sendChat(player.getUsername() + "> "
+												+ (response.substring(response.indexOf(" ") + 1)));
 									}
 								}
 								break;
