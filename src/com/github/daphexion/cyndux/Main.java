@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Vector;
@@ -193,6 +194,17 @@ public class Main {
 						}
 						player.send("What is your command?");
 						player.cannotChat = false;
+						break;
+					case INVENTORY:
+						player.send("You have in your ship:");
+						ArrayList<Integer> inventory = player.getInventory();
+						for (int ItemID : inventory) {
+							try {
+								Item.getName(ItemID);
+							} catch (ItemDoesNotExist e) {
+								e.printStackTrace();
+							}
+						}
 						break;
 					case MAP:
 						player.printMap();
@@ -494,18 +506,25 @@ public class Main {
 							case OBJECT:
 								player.setScreen(Screen.MAIN);
 							default:
-								out.println("Sorry captain, I did not understand.");
-								break;
+								if (player.getScreen() == Screen.GOTO) {
+									out.println("Sorry captain, I did not understand.");
+									break;
+								} else {
+
+								}
+
 							}
 							break;
+						case "inventory":
+							player.setScreen(Screen.INVENTORY);
+							break;
 						default:
-							out.println("Sorry captain, I did not understand.");
+							player.send("Sorry captain, I did not understand.");
 							break;
 						}
 						break;
 					}
 				}
-
 			} catch (IOException e) {
 				System.out.println(e);
 			} finally {

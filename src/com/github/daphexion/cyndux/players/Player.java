@@ -5,14 +5,18 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Properties;
 
+import com.github.daphexion.cyndux.exceptions.ItemDoesNotExist;
+import com.github.daphexion.cyndux.exceptions.NotInInventory;
 import com.github.daphexion.cyndux.exceptions.PlayerAlreadyExists;
 import com.github.daphexion.cyndux.exceptions.PlayerDoesNotExist;
 import com.github.daphexion.cyndux.sectors.Map;
 
 public class Player {
 	private String username;
+	private ArrayList<Integer> Inventory = new ArrayList<Integer>();
 	private File file;
 	Properties playerProp = new Properties();
 	private String ship;
@@ -49,6 +53,11 @@ public class Player {
 				input.close();
 			} catch (IOException e) {
 				e.printStackTrace();
+			}
+		}
+		if (!(playerProp.getProperty("inventory") == null) || playerProp.getProperty("inventory").isEmpty()) {
+			for (String id : playerProp.getProperty("inventory").split(",")) {
+				Inventory.add(Integer.parseInt(id));
 			}
 		}
 		return;
@@ -91,6 +100,7 @@ public class Player {
 				playerProp.setProperty("password", Integer.toString(password.hashCode()));
 				playerProp.setProperty("location", "");
 				playerProp.setProperty("ship", prop.getProperty("starting.ship"));
+				playerProp.setProperty("inventory", "");
 				playerProp.store(output, null);
 				this.ship = playerProp.getProperty("ship");
 				output.flush();
@@ -169,5 +179,29 @@ public class Player {
 
 	public void setLocationInSector(LocationInSector locationInSector) {
 		this.locationInSector = locationInSector;
+	}
+	public ArrayList<Integer> getInventory(){
+		return Inventory;
+	}
+	public void addToInventory(int ItemID) throws ItemDoesNotExist{
+		file = new File("./items/"+ItemID+".properties");
+		if (file.exists()){
+			Inventory.add(ItemID);
+		} else {
+			throw new ItemDoesNotExist(ItemID);
+		}
+		return;
+	}
+	public void removeFromInventory(int ItemID) throws ItemDoesNotExist,NotInInventory{
+		if (file.exists()){
+			if (Inventory.contains(ItemID)){
+				Inventory.remove(ItemID);
+			}else{	
+				throw new NotInInventory();
+			}
+		} else {
+			throw new ItemDoesNotExist(ItemID);
+		}
+		return;
 	}
 }

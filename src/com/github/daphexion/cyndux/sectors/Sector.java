@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Vector;
-
 import com.github.daphexion.cyndux.Main;
 import com.github.daphexion.cyndux.players.Player;
 
@@ -361,6 +360,9 @@ public class Sector {
 			}
 		}
 		return players;
+	}
+	public static void Goto(Player player){
+		
 	}
 
 }

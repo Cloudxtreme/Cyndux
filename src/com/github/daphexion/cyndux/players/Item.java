@@ -8,7 +8,7 @@ import java.util.Properties;
 import com.github.daphexion.cyndux.exceptions.ItemDoesNotExist;
 
 public class Item {
-	public static Properties get(int ItemID) throws ItemDoesNotExist{
+	public static String getName(int ItemID) throws ItemDoesNotExist{
 		Properties ItemProp = new Properties();
 		File file = new File("./items/"+ItemID+".properties");
 		if (!file.exists()) {
@@ -22,6 +22,6 @@ public class Item {
 				e.printStackTrace();
 			}
 		}
-		return ItemProp;
+		return ItemProp.getProperty("name");
 	}
 }
