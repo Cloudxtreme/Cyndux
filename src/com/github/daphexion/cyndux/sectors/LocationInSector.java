@@ -1,4 +1,4 @@
-package com.github.daphexion.cyndux.players;
+package com.github.daphexion.cyndux.sectors;
 
 public enum LocationInSector {
 	NEBULA,

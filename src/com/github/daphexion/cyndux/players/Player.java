@@ -12,6 +12,7 @@ import com.github.daphexion.cyndux.exceptions.ItemDoesNotExist;
 import com.github.daphexion.cyndux.exceptions.NotInInventory;
 import com.github.daphexion.cyndux.exceptions.PlayerAlreadyExists;
 import com.github.daphexion.cyndux.exceptions.PlayerDoesNotExist;
+import com.github.daphexion.cyndux.sectors.LocationInSector;
 import com.github.daphexion.cyndux.sectors.Map;
 
 public class Player {

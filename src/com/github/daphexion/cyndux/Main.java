@@ -13,6 +13,7 @@ import java.util.Random;
 import java.util.Vector;
 
 import com.github.daphexion.cyndux.exceptions.*;
+import com.github.daphexion.cyndux.items.Item;
 import com.github.daphexion.cyndux.players.*;
 import com.github.daphexion.cyndux.sectors.*;
 
@@ -198,9 +199,12 @@ public class Main {
 					case INVENTORY:
 						player.send("You have in your ship:");
 						ArrayList<Integer> inventory = player.getInventory();
+						if (inventory.isEmpty()){
+							player.send("● Nothing");
+						}
 						for (int ItemID : inventory) {
 							try {
-								Item.getName(ItemID);
+								player.send("● " + Item.getName(ItemID));
 							} catch (ItemDoesNotExist e) {
 								e.printStackTrace();
 							}
