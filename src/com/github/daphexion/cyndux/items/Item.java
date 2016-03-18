@@ -72,4 +72,36 @@ public class Item{
 		}
 		return type;
 	}
+	public static String getCompatiblity(int ItemID) throws ItemDoesNotExist{
+		Properties ItemProp = new Properties();
+		File file = new File("./items/"+ItemID+".properties");
+		if (!file.exists()) {
+			throw new ItemDoesNotExist(ItemID);
+		} else {
+			try {
+				FileInputStream input = new FileInputStream(file);
+				ItemProp.load(input);
+				input.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return ItemProp.getProperty("compatibility","");
+	}
+	public static String getSlot(int ItemID) throws ItemDoesNotExist{
+		Properties ItemProp = new Properties();
+		File file = new File("./items/"+ItemID+".properties");
+		if (!file.exists()) {
+			throw new ItemDoesNotExist(ItemID);
+		} else {
+			try {
+				FileInputStream input = new FileInputStream(file);
+				ItemProp.load(input);
+				input.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return ItemProp.getProperty("slotposition");
+	}
 }

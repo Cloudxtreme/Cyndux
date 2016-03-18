@@ -19,7 +19,7 @@ public class Player {
 	private String username;
 	private ArrayList<Integer> Inventory = new ArrayList<Integer>();
 	private File file;
-	Properties playerProp = new Properties();
+	public Properties playerProp = new Properties();
 	private String ship;
 	private ChatMode chatMode;
 	PrintWriter out;
