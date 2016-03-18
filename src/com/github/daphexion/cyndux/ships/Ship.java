@@ -28,9 +28,12 @@ public class Ship {
 			if (!shipProp.getProperty("compatibility").equals(Item.getCompatiblity(ItemID))) {
 				// TODO Exception here
 			} else {
-				if (!Item.getSlot(ItemID).equals(slot.getSlot()))
+				if (!Item.getSlot(ItemID).equals(slot.getSlot())){
 				player.playerProp.setProperty("ships.slots." + slot.getPropName(), Integer.toString(ItemID));
 				player.playerProp.store(output, null);
+				}else{
+					
+				}
 			}
 			output.flush();
 			output.close();
