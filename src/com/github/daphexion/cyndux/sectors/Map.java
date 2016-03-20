@@ -4,7 +4,7 @@ import com.github.daphexion.cyndux.players.Player;
 
 public class Map {
 	public static void printMap(Player player) {
-		int maploc = Integer.parseInt(player.getLocation());
+		int maploc =player.getLocation();
 		int mapn = (maploc - 100);
 		int maps = maploc + 100;
 		int mape = maploc + 1; // how the fuck does increment

@@ -8,22 +8,24 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Random;
 import java.util.Vector;
 
 import com.github.daphexion.cyndux.exceptions.*;
 import com.github.daphexion.cyndux.items.Item;
-import com.github.daphexion.cyndux.players.*;
+import com.github.daphexion.cyndux.players.Chat;
+import com.github.daphexion.cyndux.players.ChatMode;
+import com.github.daphexion.cyndux.players.Player;
+import com.github.daphexion.cyndux.players.Screen;
+import com.github.daphexion.cyndux.players.OnlinePlayers;
 import com.github.daphexion.cyndux.sectors.*;
 
 public class Main {
 	/**
 	 * The port that the server listens on.
 	 */
-	public static HashSet<Player> players = new HashSet<Player>();
-	static Server server;
-
+	public static OnlinePlayers players = new OnlinePlayers();
+	public static Server server;
 	/**
 	 * The application main method, which just listens on a port and spawns
 	 * handler threads.
@@ -96,18 +98,13 @@ public class Main {
 										break;
 									}
 									if (player.authenticate(userpass[1])) {
-										if (!players.contains(player)) {
-											synchronized (players) {
-												players.add(player);
-											}
-											System.out.println("IP " + socket.getRemoteSocketAddress()
-													+ " logged in as " + player.getUsername());
-										} else {
-											player.send("This user is already logged in!");
+										try {
+											players.add(player);
+											notloggedin = false;
+										} catch (AlreadyConnected e){
+											player.send(e.getMessage());
 											player.send("Are you registering or logging in?");
-											break;
 										}
-										notloggedin = false;
 										break;
 									} else {
 										player.send("Wrong password!");
@@ -134,24 +131,23 @@ public class Main {
 									player = new Player(userpass[0], out);
 									try {
 										player.register(userpass[1]);
+										players.add(player);
+										System.out.println("IP " + socket.getRemoteSocketAddress() + " logged in as "
+												+ player.getUsername());
+										notloggedin = false;
 									} catch (PlayerAlreadyExists e) {
 										player.send(e.getMessage());
 										player.send("Are you registering or logging in?");
-										break;
+									} catch (AlreadyConnected e){
+										//Unreachable code, shh bby is ok.
 									}
-									synchronized (players) {
-										players.add(player);
-									}
-									System.out.println("IP " + socket.getRemoteSocketAddress() + " logged in as "
-											+ player.getUsername());
-									notloggedin = false;
 									break;
 								}
 							}
 						}
 					}
 				}
-				if (player.getLocation().isEmpty()) {
+				if (player.getLocation()==0) {
 					if (server.prop.getProperty("starting.location").isEmpty()) {
 						Random r = new Random();
 						int randomloc = r.nextInt(10001);
@@ -162,7 +158,7 @@ public class Main {
 				}
 				player.send("Logged in as " + player.getUsername());
 				while (true) {
-					int maploc = Integer.parseInt(player.getLocation());
+					int maploc = player.getLocation();
 					int mapn = (maploc - 100);
 					int maps = maploc + 100;
 					int mape = maploc + 1; // how the fuck does increment
@@ -173,8 +169,8 @@ public class Main {
 					int mapsw = maps - 1;
 					int mapnw = mapn - 1;
 					int warp = 0;
-					Sector.initializeSector(Integer.parseInt(player.getLocation()));
-					Vector<String> objects = Sector.getObjects(Integer.parseInt(player.getLocation()));
+					Sector.initializeSector(player.getLocation());
+					Vector<String> objects = Sector.getObjects(player.getLocation());
 					// Dis where da magic happens.
 					switch (player.getScreen()) {
 					case MAIN:
@@ -319,7 +315,7 @@ public class Main {
 								// TODO Ship warp delay.
 								if (warped) {
 									for (Player plyr : Sector
-											.getPlayersInSector(Integer.parseInt(player.getLocation()))) {
+											.getPlayersInSector(player.getLocation())) {
 										if (plyr != player) {
 											plyr.sendChat(player.getUsername() + " just left your sector!");
 										}
@@ -374,31 +370,7 @@ public class Main {
 								player.send("Enter something to say!");
 								break;
 							}
-							switch (player.getChatStatus()) {
-							case NOTINCHAT:
-								player.send("You are not in any chat mode! Use the chat command!");
-								break;
-							case SYSTEM:
-								for (Player plyr : players) {
-									if (plyr.getChatStatus().equals(ChatMode.SYSTEM) && plyr != player) {
-										plyr.sendChat(player.getUsername() + "> "
-												+ (response.substring(response.indexOf(" ") + 1)));
-									}
-								}
-								break;
-							case SECTOR:
-								for (Player plyr : players) {
-									if (plyr.getChatStatus().equals(ChatMode.SECTOR) && plyr != player
-											&& plyr.getLocation().equals(player.getLocation())) {
-										plyr.sendChat(player.getUsername() + "> "
-												+ (response.substring(response.indexOf(" ") + 1)));
-									}
-								}
-								break;
-							case GROUP:
-								// TODO THE ENTIRE CORP THING
-								break;
-							}
+							Chat.main(player,response);
 							break;
 						case "up":
 							if (player.getScreen() != Screen.MAP) {
@@ -486,8 +458,8 @@ public class Main {
 							break;
 						case "online":
 							player.cannotChat = true;
-							player.send("Amount of people online." + players.size());
-							for (Player plyr : players) {
+							player.send("Amount of people online." + players.get().size());
+							for (Player plyr : players.get().values()) {
 								player.send("● " + plyr.getUsername());
 							}
 							player.cannotChat = false;
@@ -533,9 +505,7 @@ public class Main {
 				System.out.println(e);
 			} finally {
 				// client goes offline
-				if (player != null) {
-					players.remove(player.getUsername());
-				}
+				players.remove(player);
 				try {
 					socket.close();
 				} catch (IOException e) {

@@ -10,11 +10,11 @@ import java.util.Properties;
 public class Server {
 	public ServerSocket listener;
 	private int port;
-	Properties prop = new Properties();
-
+	public Properties prop = new Properties();
+	public DBConnection database;
 	public Server() {
+		database = new DBConnection();
 		initializeServer();
-		System.out.println("Cyndux Server is running.");
 		port = Integer.parseInt(prop.getProperty("port"));
 		while (true) {
 			try {
@@ -28,13 +28,15 @@ public class Server {
 			}
 		}
 		System.out.println("Using " + port + "!");
+		System.out.println("Cyndux Server is running.");
 	}
 
-	private void initializeServer() {
+	private void initializeServer(){
 		try {
-			File sectorFolder = new File("./sectors");
-			if (!sectorFolder.exists()) {
-				sectorFolder.mkdirs();
+			database.initialize();
+			File itemsFolder = new File("./items");
+			if (!itemsFolder.exists()) {
+				itemsFolder.mkdirs();
 			}
 			FileInputStream input = new FileInputStream("./server.properties");
 			prop.load(input);

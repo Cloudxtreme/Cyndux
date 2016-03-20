@@ -1,6 +1,7 @@
 package com.github.daphexion.cyndux.sectors;
 
 public enum LocationInSector {
+	SPACE,
 	NEBULA,
 	BELT,
 	COMBAT,

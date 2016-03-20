@@ -1,13 +1,10 @@
 package com.github.daphexion.cyndux.players;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Properties;
-
+import com.github.daphexion.cyndux.Main;
 import com.github.daphexion.cyndux.exceptions.ItemDoesNotExist;
 import com.github.daphexion.cyndux.exceptions.NotInInventory;
 import com.github.daphexion.cyndux.exceptions.PlayerAlreadyExists;
@@ -18,8 +15,6 @@ import com.github.daphexion.cyndux.sectors.Map;
 public class Player {
 	private String username;
 	private ArrayList<Integer> Inventory = new ArrayList<Integer>();
-	private File file;
-	public Properties playerProp = new Properties();
 	private String ship;
 	private ChatMode chatMode;
 	PrintWriter out;
@@ -31,7 +26,6 @@ public class Player {
 	public Player(String n, PrintWriter o) {
 		username = n;
 		out = o;
-		file = new File("./users/" + this.username + ".properties");
 		cannotChat = false;
 		chatMode = ChatMode.NOTINCHAT;
 	}
@@ -39,56 +33,57 @@ public class Player {
 	public void printMap() {
 		Map.printMap(this);
 	}
-
+	public void load() throws PlayerDoesNotExist{
+		try {
+			if(Main.server.database.Query("SELECT * FROM Players WHERE Username = '"+ username+"'").next()){
+				return;
+			} else {
+				throw new PlayerDoesNotExist(username);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	public String getShip() {
 		return ship;
 	}
 
-	public void load() throws PlayerDoesNotExist {
-		if (!file.exists()) {
-			throw new PlayerDoesNotExist(username);
-		} else {
-			try {
-				FileInputStream input = new FileInputStream(file);
-				playerProp.load(input);
-				input.close();
-			} catch (IOException e) {
-				e.printStackTrace();
+	public boolean authenticate(String password) {
+		boolean a = false;
+		try {
+			if (!(password.hashCode()== Main.server.database.Query("SELECT Password FROM Players WHERE Username = '"+ username+"'").getInt("Password"))) {
+				a=false;
+			} else {
+				a=true;
 			}
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
-		if (!(playerProp.getProperty("inventory") == null) || playerProp.getProperty("inventory").isEmpty()) {
-			for (String id : playerProp.getProperty("inventory").split(",")) {
-				Inventory.add(Integer.parseInt(id));
-			}
+		return a;
+	}
+
+	public int getLocation() {
+		int a = 0;
+		try {
+			a=Main
+					.server
+					.database
+					.Query("SELECT Location "
+							+ "FROM Players "
+							+ "WHERE Username = '"+ username+"'").getInt("Location");
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
+		return a;
+	}
+	public void setLocation(int loc) {
+		Main.server.database.Query("UPDATE Players SET Location = "+loc+" WHERE Username = '"+username+"'");
 		return;
 	}
 
-	public boolean authenticate(String password) {
-		if (!playerProp.getProperty("password").equals(Integer.toString(password.hashCode()))) {
-			return false;
-		} else {
-			return true;
-		}
-	}
-
-	public String getLocation() {
-		return playerProp.getProperty("location");
-	}
-	public void setLocation(int loc) {
-		try {
-			FileOutputStream output = new FileOutputStream("./users/" + username + ".properties");
-			playerProp.setProperty("location", Integer.toString(loc));
-			playerProp.store(output, null);
-			output.flush();
-			output.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 	public void register(String password) throws PlayerAlreadyExists {
-		if (file.exists()) {
+		/*if (file.exists()) {
 			throw new PlayerAlreadyExists(username);
 		} else {
 			try {
@@ -110,9 +105,16 @@ public class Player {
 				e.printStackTrace();
 			}
 		}
+		*/
+		Main.server.database.Update("INSERT INTO Players (Username, Password, Money, Location, Inventory) "
+									+ "VALUES ( '"
+									+ username + "', "
+									+ password.hashCode()+", "
+									+ Main.server.prop.getProperty("starting.money")+", "
+									+ "NULL, "
+									+ "NULL )");
 		return;
 	}
-
 	public String getUsername() {
 		return this.username;
 	}
@@ -185,7 +187,7 @@ public class Player {
 		return Inventory;
 	}
 	public void addToInventory(int ItemID) throws ItemDoesNotExist{
-		file = new File("./items/"+ItemID+".properties");
+		File file = new File("./items/"+ItemID+".properties");
 		if (file.exists()){
 			Inventory.add(ItemID);
 		} else {
@@ -194,6 +196,7 @@ public class Player {
 		return;
 	}
 	public void removeFromInventory(int ItemID) throws ItemDoesNotExist,NotInInventory{
+		File file = new File("./items/"+ItemID+".properties");
 		if (file.exists()){
 			if (Inventory.contains(ItemID)){
 				Inventory.remove(ItemID);

@@ -353,13 +353,13 @@ public class Sector {
 		return objects;
 	}
 	public static Vector<Player> getPlayersInSector(int sectorNum){
-		Vector<Player> players = new Vector<Player>();
-		for (Player plyr : Main.players) {
-			if (plyr.getLocation().equals(Integer.toString(sectorNum))) {
-				players.addElement(plyr);
+		Vector<Player> Sectorplayers = new Vector<Player>();
+		for (Player plyr : Main.players.get().values()) {
+			if (plyr.getLocation()==sectorNum) {
+				Sectorplayers.addElement(plyr);
 			}
 		}
-		return players;
+		return Sectorplayers;
 	}
 	public static void Goto(Player player){
 		
