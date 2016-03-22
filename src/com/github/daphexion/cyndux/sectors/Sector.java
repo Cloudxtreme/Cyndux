@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Vector;
@@ -362,7 +363,46 @@ public class Sector {
 		return Sectorplayers;
 	}
 	public static void Goto(Player player){
-		
+		//TODO
 	}
-
+	public static HashMap<String, Integer> getSurroundingSectors(int sectorNum){
+		HashMap<String, Integer> SurroundingSectors = new HashMap<String, Integer>();
+		int maploc = sectorNum;
+		int mapn = (maploc - 100);
+		int maps = maploc + 100;
+		int mape = maploc + 1; // how the fuck does increment
+								// operators work
+		int mapw = maploc - 1;
+		int mapne = mapn + 1;
+		int mapse = maps + 1;
+		int mapsw = maps - 1;
+		int mapnw = mapn - 1;
+		if (((maploc % 100) <= 1)){ //T R U L Y S P H E R I C A L B O I S
+			switch (maploc % 100){
+			case 0:
+				mape = maploc - 99;
+				break;
+			case 1:
+				mapw = maploc + 99;
+				break;
+			}
+		}else{
+			if (maploc <=100){
+				mapn = maploc + 50;
+			}
+			if (maploc >= 9900){
+				maps = maploc + 50;
+			}
+		}
+		SurroundingSectors.put("maploc", maploc);
+		SurroundingSectors.put("mapnw", mapnw);
+		SurroundingSectors.put("mapn", mapn);
+		SurroundingSectors.put("mapne", mapne);
+		SurroundingSectors.put("mapw", mapw);
+		SurroundingSectors.put("mape", mape);
+		SurroundingSectors.put("mapsw", mapsw);
+		SurroundingSectors.put("maps", maps);
+		SurroundingSectors.put("mapse", mapse);
+		return SurroundingSectors;
+	}
 }

@@ -1,39 +1,16 @@
 package com.github.daphexion.cyndux.screen;
 
+import java.util.HashMap;
+
 import com.github.daphexion.cyndux.players.Player;
+import com.github.daphexion.cyndux.sectors.Sector;
 
 public class MapScreen {
 	public static void print(Player player) {
-		int maploc = player.getLocation();
-		int mapn = (maploc - 100);
-		int maps = maploc + 100;
-		int mape = maploc + 1; // how the fuck does increment
-								// operators work
-		int mapw = maploc - 1;
-		int mapne = mapn + 1;
-		int mapse = maps + 1;
-		int mapsw = maps - 1;
-		int mapnw = mapn - 1;
-		if (((maploc % 100) <= 1)){ //T R U L Y S P H E R I C A L B O I S
-			switch (maploc % 100){
-			case 0:
-				mape = maploc - 99;
-				break;
-			case 1:
-				mapw = maploc + 99;
-				break;
-			}
-		}else{
-			if (maploc <=100){
-				mapn = maploc + 50;
-			}
-			if (maploc >= 9900){
-				maps = maploc + 50;
-			}
-		} 
+		HashMap<String, Integer> SurroundingSectors = Sector.getSurroundingSectors(player.getLocation());
 		player.send("╔═════╦═════╦═════╗");
 		player.send(
-				"║" + sectorThing(mapnw) + "║" + sectorThing(mapn) + "║" + sectorThing(mapne) + "║");
+				"║" + sectorThing(SurroundingSectors.get("mapnw")) + "║" + sectorThing(SurroundingSectors.get("mapn")) + "║" + SurroundingSectors.get("mapne") + "║");
 		switch (player.getMapCursor()) {
 
 		case 1:
@@ -52,7 +29,7 @@ public class MapScreen {
 		}
 		player.send("╠═════╬═════╬═════╣");
 		player.send(
-				"║" + sectorThing(mapw) + "║" + sectorThing(maploc) + "║" + sectorThing(mape) + "║");
+				"║" + sectorThing(SurroundingSectors.get("mapw")) + "║" + sectorThing(SurroundingSectors.get("maploc")) + "║" + sectorThing(SurroundingSectors.get("mape")) + "║");
 		switch (player.getMapCursor()) {
 
 		case 4:
@@ -70,7 +47,7 @@ public class MapScreen {
 		}
 		player.send("╠═════╬═════╬═════╣");
 		player.send(
-				"║" + sectorThing(mapsw) + "║" + sectorThing(maps) + "║" + sectorThing(mapse) + "║");
+				"║" + sectorThing(SurroundingSectors.get("mapsw")) + "║" + sectorThing(SurroundingSectors.get("maps")) + "║" + sectorThing(SurroundingSectors.get("mapse")) + "║");
 		switch (player.getMapCursor()) {
 
 		case 7:
