@@ -9,8 +9,8 @@ import com.github.daphexion.cyndux.exceptions.ItemDoesNotExist;
 import com.github.daphexion.cyndux.exceptions.NotInInventory;
 import com.github.daphexion.cyndux.exceptions.PlayerAlreadyExists;
 import com.github.daphexion.cyndux.exceptions.PlayerDoesNotExist;
+import com.github.daphexion.cyndux.screen.ScreenMode;
 import com.github.daphexion.cyndux.sectors.LocationInSector;
-import com.github.daphexion.cyndux.sectors.Map;
 
 public class Player {
 	private String username;
@@ -18,7 +18,7 @@ public class Player {
 	private String ship;
 	private ChatMode chatMode;
 	PrintWriter out;
-	private Screen screen = Screen.MAIN;
+	private ScreenMode screen = ScreenMode.MAIN;
 	private byte mapcursor = 5;
 	public boolean cannotChat;
 	private LocationInSector locationInSector;
@@ -28,10 +28,6 @@ public class Player {
 		out = o;
 		cannotChat = false;
 		chatMode = ChatMode.NOTINCHAT;
-	}
-
-	public void printMap() {
-		Map.printMap(this);
 	}
 	public void load() throws PlayerDoesNotExist{
 		try {
@@ -134,11 +130,11 @@ public class Player {
 		return;
 	}
 
-	public Screen getScreen(){ 
+	public ScreenMode getScreen(){ 
 		return this.screen;
 	}
 
-	public void setScreen(Screen state) {
+	public void setScreen(ScreenMode state) {
 		this.screen = state;
 		return;
 	}

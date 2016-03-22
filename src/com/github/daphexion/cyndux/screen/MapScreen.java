@@ -1,10 +1,10 @@
-package com.github.daphexion.cyndux.sectors;
+package com.github.daphexion.cyndux.screen;
 
 import com.github.daphexion.cyndux.players.Player;
 
-public class Map {
-	public static void printMap(Player player) {
-		int maploc =player.getLocation();
+public class MapScreen {
+	public static void print(Player player) {
+		int maploc = player.getLocation();
 		int mapn = (maploc - 100);
 		int maps = maploc + 100;
 		int mape = maploc + 1; // how the fuck does increment
@@ -31,8 +31,6 @@ public class Map {
 				maps = maploc + 50;
 			}
 		} 
-
-		player.cannotChat=true;
 		player.send("╔═════╦═════╦═════╗");
 		player.send(
 				"║" + sectorThing(mapnw) + "║" + sectorThing(mapn) + "║" + sectorThing(mapne) + "║");
@@ -92,7 +90,6 @@ public class Map {
 		player.send("╚═════╩═════╩═════╝");
 		player.send("To move the cursor, type up, down, left or right.");
 		player.send("To warp to where your cursor is, type warp.");
-		player.cannotChat=false;
 	}
 	private static String sectorThing(int loc) {
 		if (loc >= 10) {

@@ -7,16 +7,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.Random;
-import java.util.Vector;
-
 import com.github.daphexion.cyndux.exceptions.*;
-import com.github.daphexion.cyndux.items.Item;
 import com.github.daphexion.cyndux.players.Chat;
 import com.github.daphexion.cyndux.players.ChatMode;
 import com.github.daphexion.cyndux.players.Player;
-import com.github.daphexion.cyndux.players.Screen;
+import com.github.daphexion.cyndux.screen.Screen;
+import com.github.daphexion.cyndux.screen.ScreenMode;
 import com.github.daphexion.cyndux.players.OnlinePlayers;
 import com.github.daphexion.cyndux.sectors.*;
 
@@ -158,118 +155,7 @@ public class Main {
 				}
 				player.send("Logged in as " + player.getUsername());
 				while (true) {
-					int maploc = player.getLocation();
-					int mapn = (maploc - 100);
-					int maps = maploc + 100;
-					int mape = maploc + 1; // how the fuck does increment
-											// operators work
-					int mapw = maploc - 1;
-					int mapne = mapn + 1;
-					int mapse = maps + 1;
-					int mapsw = maps - 1;
-					int mapnw = mapn - 1;
-					int warp = 0;
-					Sector.initializeSector(player.getLocation());
-					Vector<String> objects = Sector.getObjects(player.getLocation());
-					// Dis where da magic happens.
-					switch (player.getScreen()) {
-					case MAIN:
-						player.cannotChat = true;
-						player.send("You are now in " + player.getLocation());
-						player.send("You see a:");
-						for (String object : objects) {
-							player.send("● " + object);
-						}
-						player.send("What is your command?");
-						player.cannotChat = false;
-						break;
-					case GOTO:
-						player.cannotChat = true;
-						player.send("You have the option of going to:");
-						for (String object : objects) {
-							player.send("● A" + object);
-						}
-						player.send("What is your command?");
-						player.cannotChat = false;
-						break;
-					case INVENTORY:
-						player.send("You have in your ship:");
-						ArrayList<Integer> inventory = player.getInventory();
-						if (inventory.isEmpty()){
-							player.send("● Nothing");
-						}
-						for (int ItemID : inventory) {
-							try {
-								player.send("● " + Item.getName(ItemID));
-							} catch (ItemDoesNotExist e) {
-								e.printStackTrace();
-							}
-						}
-						break;
-					case MAP:
-						player.printMap();
-						break;
-					case WARP:
-						switch (player.getMapCursor()) {
-						case 1:
-							warp = mapnw;
-							break;
-						case 2:
-							warp = mapn;
-							break;
-						case 3:
-							warp = mapne;
-							break;
-						case 4:
-							warp = mapw;
-							break;
-						case 5:
-							warp = maploc;
-							break;
-						case 6:
-							warp = mape;
-							break;
-						case 7:
-							warp = mapsw;
-							break;
-						case 8:
-							warp = maps;
-							break;
-						case 9:
-							warp = mapse;
-							break;
-						default:
-							warp = maploc;
-						}
-						player.send("Are you sure you want to warp to sector " + warp + "?");
-						break;
-					case OBJECT:
-						switch (player.getLocationInSector()) {
-						case BELT:
-							player.send("You are now in the asteroid belt of " + player.getLocation());
-							break;
-						case COMBAT:
-							// TODO Combat
-							break;
-						case NEBULA:
-							player.send("You are now in the nebula of " + player.getLocation());
-							break;
-						case STATION:
-							player.send("Unfortunately, stations are not implemented for the time being.");
-							// TODO Stations
-							break;
-						case FACTORY:
-							player.send("Unfortunately, factories are not implemented for the time being.");
-							break;
-						case BLACKMARKET:
-							player.send("Unfortunately, the blackmarket is not implemented for the time being.");
-							break;
-						default:
-							player.send("Unfortunately, planets are not implemented for the time being.");
-							break;
-						}
-						break;
-					}
+					new Screen(player);
 					while (true) {
 						response = in.readLine();
 						if (response == null) {
@@ -279,6 +165,34 @@ public class Main {
 								? response.toLowerCase().substring(0, response.indexOf(" ")) : response.toLowerCase();
 						switch (firstresponse) {
 						case "y":
+							int maploc = player.getLocation();
+							int mapn = (maploc - 100);
+							int maps = maploc + 100;
+							int mape = maploc + 1; // how the fuck does increment
+													// operators work
+							int mapw = maploc - 1;
+							int mapne = mapn + 1;
+							int mapse = maps + 1;
+							int mapsw = maps - 1;
+							int mapnw = mapn - 1;
+							if (((maploc % 100) <= 1)){ //T R U L Y S P H E R I C A L B O I S
+								switch (maploc % 100){
+								case 0:
+									mape = maploc - 99;
+									break;
+								case 1:
+									mapw = maploc + 99;
+									break;
+								}
+							}else{
+								if (maploc <=100){
+									mapn = maploc + 50;
+								}
+								if (maploc >= 9900){
+									maps = maploc + 50;
+								}
+							} //TODO Refactor this into a class with an integer Array.
+							int warp = 0;
 							switch (player.getScreen()) {
 							case WARP:
 								boolean warped = true;
@@ -327,7 +241,7 @@ public class Main {
 									}
 									player.setLocation(warp);
 								}
-								player.setScreen(Screen.MAIN);
+								player.setScreen(ScreenMode.MAIN);
 							default:
 								break;
 							}
@@ -335,7 +249,7 @@ public class Main {
 						case "n":
 							switch (player.getScreen()) {
 							case WARP:
-								player.setScreen(Screen.MAP);
+								player.setScreen(ScreenMode.MAP);
 								player.setMapCursor((byte) 5);
 								break;
 							default:
@@ -344,7 +258,7 @@ public class Main {
 							break;
 						case "map":
 							player.setMapCursor((byte) 5);
-							player.setScreen(Screen.MAP);
+							player.setScreen(ScreenMode.MAP);
 							break;
 						case "chat":
 							switch (response.replace("chat ", "")) {
@@ -373,7 +287,7 @@ public class Main {
 							Chat.main(player,response);
 							break;
 						case "up":
-							if (player.getScreen() != Screen.MAP) {
+							if (player.getScreen() != ScreenMode.MAP) {
 								player.send("Sorry captain, I did not understand.");
 								break;
 							} else {
@@ -394,7 +308,7 @@ public class Main {
 							}
 							break;
 						case "down":
-							if (player.getScreen() != Screen.MAP) {
+							if (player.getScreen() != ScreenMode.MAP) {
 								player.send("Sorry captain, I did not understand.");
 								break;
 							} else {
@@ -415,7 +329,7 @@ public class Main {
 							}
 							break;
 						case "left":
-							if (player.getScreen() != Screen.MAP) {
+							if (player.getScreen() != ScreenMode.MAP) {
 								player.send("Sorry captain, I did not understand.");
 								break;
 							} else {
@@ -436,7 +350,7 @@ public class Main {
 							}
 							break;
 						case "right":
-							if (player.getScreen() != Screen.MAP) {
+							if (player.getScreen() != ScreenMode.MAP) {
 								player.send("Sorry captain, I did not understand.");
 								break;
 							} else {
@@ -467,7 +381,7 @@ public class Main {
 						case "warp":
 							switch (player.getScreen()) {
 							case MAP:
-								player.setScreen(Screen.WARP);
+								player.setScreen(ScreenMode.WARP);
 								break;
 							default:
 								out.println("Sorry captain, I did not understand.");
@@ -477,12 +391,12 @@ public class Main {
 						case "back":
 							switch (player.getScreen()) {
 							case MAP:
-								player.setScreen(Screen.MAIN);
+								player.setScreen(ScreenMode.MAIN);
 								break;
 							case OBJECT:
-								player.setScreen(Screen.MAIN);
+								player.setScreen(ScreenMode.MAIN);
 							default:
-								if (player.getScreen() == Screen.GOTO) {
+								if (player.getScreen() == ScreenMode.GOTO) {
 									out.println("Sorry captain, I did not understand.");
 									break;
 								} else {
@@ -492,7 +406,7 @@ public class Main {
 							}
 							break;
 						case "inventory":
-							player.setScreen(Screen.INVENTORY);
+							player.setScreen(ScreenMode.INVENTORY);
 							break;
 						default:
 							player.send("Sorry captain, I did not understand.");
