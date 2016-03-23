@@ -48,7 +48,7 @@ public class Player {
 	public boolean authenticate(String password) {
 		boolean a = false;
 		try {
-			if (!(password.hashCode()== Main.server.database.Query("SELECT Password FROM Players WHERE Username = '"+ username+"'").getInt("Password"))) {
+			if (!(password.hashCode()== Main.server.database.Query("SELECT Password FROM Players WHERE Username = '"+ username+"';").getInt("Password"))) {
 				a=false;
 			} else {
 				a=true;
@@ -74,34 +74,11 @@ public class Player {
 		return a;
 	}
 	public void setLocation(int loc) {
-		Main.server.database.Query("UPDATE Players SET Location = "+loc+" WHERE Username = '"+username+"'");
+		Main.server.database.Update("UPDATE Players SET Location = "+loc+" WHERE Username = '"+username+"'");
 		return;
 	}
 
 	public void register(String password) throws PlayerAlreadyExists {
-		/*if (file.exists()) {
-			throw new PlayerAlreadyExists(username);
-		} else {
-			try {
-				file.createNewFile();
-				FileInputStream input = new FileInputStream("./server.properties");
-				Properties prop = new Properties();
-				prop.load(input);
-				FileOutputStream output = new FileOutputStream(file);
-				playerProp.setProperty("money", prop.getProperty("starting.money"));
-				playerProp.setProperty("password", Integer.toString(password.hashCode()));
-				playerProp.setProperty("location", "");
-				playerProp.setProperty("ship", prop.getProperty("starting.ship"));
-				playerProp.setProperty("inventory", "");
-				playerProp.store(output, null);
-				this.ship = playerProp.getProperty("ship");
-				output.flush();
-				output.close();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		*/
 		Main.server.database.Update("INSERT INTO Players (Username, Password, Money, Location, Inventory) "
 									+ "VALUES ( '"
 									+ username + "', "

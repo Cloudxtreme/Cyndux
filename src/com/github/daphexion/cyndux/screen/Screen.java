@@ -1,12 +1,6 @@
 package com.github.daphexion.cyndux.screen;
 
-import java.util.ArrayList;
-import java.util.Vector;
-
-import com.github.daphexion.cyndux.exceptions.ItemDoesNotExist;
-import com.github.daphexion.cyndux.items.Item;
 import com.github.daphexion.cyndux.players.Player;
-import com.github.daphexion.cyndux.sectors.Sector;
 
 public class Screen {
 	public Screen(Player player){

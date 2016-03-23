@@ -54,6 +54,22 @@ public class DBConnection {
 								+ "FOREIGN KEY(Username) REFERENCES Players(Username),"
 								+ "FOREIGN KEY(Station) REFERENCES Stations(Location)"
 								+")");
+			statement.execute("CREATE TABLE IF NOT EXISTS Sectors ("
+					+ "Location INT PRIMARY KEY NOT NULL,"
+					+ "Star INT NOT NULL DEFAULT 0,"//Boolean 1 or 0
+					+ "Station INT NOT NULL DEFAULT 0,"//Boolean 1 or 0
+					+ "Wormhole1 INT NOT NULL DEFAULT 0,"
+					+ "Wormhole2 INT NOT NULL DEFAULT,"
+					+ "AsteroidBelt INT NOT NULL DEFAULT 0,"// None: 0;Small:1, Medium:2, Large:3
+					+ "Star INT NOT NULL DEFAULT 0,"//Boolean 1 or 0
+					+ "Nebula INT NOT NULL DEFAULT 0,"// Refer to Asteroid Belt Column.
+					+ "Planet1 INT NOT NULL DEFAULT 0,"//Planet Format is SizeNumberTypeNumber
+					+ "Planet2 INT NOT NULL DEFAULT 0,"//where both can be referred to in the Sector class.
+					+ "Planet3 INT NOT NULL DEFAULT 0,"
+					+ "Planet4 INT NOT NULL DEFAULT 0,"
+					+ "Planet5 INT NOT NULL DEFAULT 0,"
+					+ "Planet6 INT NOT NULL DEFAULT 0,"
+					+")");
 		}catch(SQLException e){
 			e.printStackTrace();
 		}

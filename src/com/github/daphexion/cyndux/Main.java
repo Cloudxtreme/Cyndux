@@ -42,7 +42,6 @@ public class Main {
 		private String response;
 		private Socket socket;
 		private BufferedReader in;
-
 		/**
 		 * Constructs a handler thread, squirreling away the socket. All the
 		 * interesting work is done in the run method.
@@ -155,6 +154,7 @@ public class Main {
 				}
 				player.send("Logged in as " + player.getUsername());
 				while (true) {
+					//Print player screen.
 					new Screen(player);
 					while (true) {
 						response = in.readLine();
