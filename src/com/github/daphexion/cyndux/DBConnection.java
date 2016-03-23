@@ -68,7 +68,7 @@ public class DBConnection {
 					+ "Planet3 INT NOT NULL DEFAULT 0,"
 					+ "Planet4 INT NOT NULL DEFAULT 0,"
 					+ "Planet5 INT NOT NULL DEFAULT 0,"
-					+ "Planet6 INT NOT NULL DEFAULT 0,"
+					+ "Planet6 INT NOT NULL DEFAULT 0"
 					+")");
 		}catch(SQLException e){
 			e.printStackTrace();
