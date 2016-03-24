@@ -61,7 +61,6 @@ public class DBConnection {
 								+ "Wormhole1 INT NOT NULL DEFAULT 0,"
 								+ "Wormhole2 INT NOT NULL DEFAULT 0,"
 								+ "AsteroidBelt INT NOT NULL DEFAULT 0,"// None: 0;Small:1, Medium:2, Large:3
-								+ "Star INT NOT NULL DEFAULT 0,"//Boolean 1 or 0
 								+ "Nebula INT NOT NULL DEFAULT 0,"// Refer to Asteroid Belt Column.
 								+ "Planet1 INT NOT NULL DEFAULT 0,"//Planet Format is SizeNumberTypeNumber
 								+ "Planet2 INT NOT NULL DEFAULT 0,"//where both can be referred to in the Sector class.
