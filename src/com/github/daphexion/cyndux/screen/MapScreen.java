@@ -10,7 +10,7 @@ public class MapScreen {
 		HashMap<String, Integer> SurroundingSectors = Sector.getSurroundingSectors(player.getLocation());
 		player.send("╔═════╦═════╦═════╗");
 		player.send(
-				"║" + sectorThing(SurroundingSectors.get("mapnw")) + "║" + sectorThing(SurroundingSectors.get("mapn")) + "║" + SurroundingSectors.get("mapne") + "║");
+				"║" + sectorThing(SurroundingSectors.get("mapnw")) + "║" + sectorThing(SurroundingSectors.get("mapn")) + "║" + sectorThing(SurroundingSectors.get("mapne")) + "║");
 		switch (player.getMapCursor()) {
 
 		case 1:

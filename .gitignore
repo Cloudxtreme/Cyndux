@@ -19,3 +19,5 @@ users/*
 /.classpath
 /.project
 *.db
+.exe
+/sqlite3.exe

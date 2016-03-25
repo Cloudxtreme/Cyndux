@@ -9,6 +9,7 @@ import com.github.daphexion.cyndux.exceptions.ItemDoesNotExist;
 import com.github.daphexion.cyndux.exceptions.NotInInventory;
 import com.github.daphexion.cyndux.exceptions.PlayerAlreadyExists;
 import com.github.daphexion.cyndux.exceptions.PlayerDoesNotExist;
+import com.github.daphexion.cyndux.exceptions.WrongPassword;
 import com.github.daphexion.cyndux.screen.ScreenMode;
 import com.github.daphexion.cyndux.sectors.LocationInSector;
 
@@ -23,40 +24,42 @@ public class Player {
 	public boolean cannotChat;
 	private LocationInSector locationInSector;
 
-	public Player(String n, PrintWriter o) {
-		username = n;
+	public Player(Boolean Registering, String username, String password, PrintWriter o) throws PlayerAlreadyExists, PlayerDoesNotExist, WrongPassword {
+		this.username = username;
 		out = o;
 		cannotChat = false;
 		chatMode = ChatMode.NOTINCHAT;
-	}
-	public void load() throws PlayerDoesNotExist{
 		try {
-			if(Main.server.database.Query("SELECT * FROM Players WHERE Username = '"+ username+"'").next()){
+		if (Registering) {
+			if(!Main.server.database.Query("SELECT * FROM Players WHERE Username = '"+ username+"'").next()){
+				Main.server.database.Update("INSERT INTO Players (Username, Password, Money, Location, Inventory) "
+						+ "VALUES ( '"
+						+ username + "', "
+						+ password.hashCode()+", "
+						+ Main.server.prop.getProperty("starting.money")+", "
+						+ "NULL, "
+						+ "NULL )");
 				return;
+			} else {
+				throw new PlayerAlreadyExists(username);
+			}
+		} else {
+			if(Main.server.database.Query("SELECT * FROM Players WHERE Username = '"+ username+"'").next()){
+				if (!(password.hashCode()== Main.server.database.Query("SELECT Password FROM Players WHERE Username = '"+ username+"';").getInt("Password"))) {
+						throw new WrongPassword();
+				} else {
+					return;
+				}
 			} else {
 				throw new PlayerDoesNotExist(username);
 			}
+		}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	public String getShip() {
 		return ship;
-	}
-
-	public boolean authenticate(String password) {
-		boolean a = false;
-		try {
-			if (!(password.hashCode()== Main.server.database.Query("SELECT Password FROM Players WHERE Username = '"+ username+"';").getInt("Password"))) {
-				a=false;
-			} else {
-				a=true;
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return a;
 	}
 
 	public int getLocation() {
@@ -78,16 +81,7 @@ public class Player {
 		return;
 	}
 
-	public void register(String password) throws PlayerAlreadyExists {
-		Main.server.database.Update("INSERT INTO Players (Username, Password, Money, Location, Inventory) "
-									+ "VALUES ( '"
-									+ username + "', "
-									+ password.hashCode()+", "
-									+ Main.server.prop.getProperty("starting.money")+", "
-									+ "NULL, "
-									+ "NULL )");
-		return;
-	}
+
 	public String getUsername() {
 		return this.username;
 	}

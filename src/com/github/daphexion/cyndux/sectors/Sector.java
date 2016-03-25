@@ -14,21 +14,21 @@ public class Sector {
 		try {
 			if (Main.server.database.Query("SELECT * FROM Sectors WHERE Location = '" + sectorNum + "'").next()) {
 				return;
+			} else {
+				Main.server.database.Update("INSERT INTO Sectors(Location) Values (" + sectorNum+")");
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Main.server.database.Update("INSERT INTO Sectors Values (" + sectorNum
-				+ ", DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT)");
 		Random sectorRand = new Random();
 		int starChance = sectorRand.nextInt(101);
 		if (starChance >= 51) {
 			Main.server.database.Update("UPDATE Sectors SET Star = 1 WHERE Location = " + sectorNum);
 			int systemChance = sectorRand.nextInt(101);
-			if (systemChance >= 71) {
+			if (systemChance >= 0) {//71
 				int PlanetsAmount = sectorRand.nextInt(7);
-				for (int i = 0; i < (PlanetsAmount); i++) {
+				for (int i = 1; i < (PlanetsAmount+1); i++) {//FIXME No planets?
 					int planetType = sectorRand.nextInt(13);
 					// Terran:1
 					// Jungle:2
@@ -138,7 +138,7 @@ public class Sector {
 				objects.addElement("large nebula");
 				break;
 			}
-			for(int i = 0;i<6;i++){
+			for(int i = 1;i<7;i++){
 				if (rs.getInt("Planet"+i)!=0){
 					String planetdesc = "";
 					String planet = Integer.toString(rs.getInt("Planet"+i));
@@ -160,7 +160,7 @@ public class Sector {
 						break;
 					}
 					planetdesc+=" ";
-					switch(planetdesc.substring(1)){
+					switch(planet.substring(1)){
 					case "1":
 						planetdesc+="terran";
 						break;
@@ -198,6 +198,7 @@ public class Sector {
 						planetdesc+="helium";
 						break;
 					}
+					planetdesc+=" planet";
 					objects.add(planetdesc);
 				}
 			}

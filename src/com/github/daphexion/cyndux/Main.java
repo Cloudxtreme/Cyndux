@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.Random;
 import com.github.daphexion.cyndux.exceptions.*;
 import com.github.daphexion.cyndux.players.Chat;
@@ -66,79 +67,46 @@ public class Main {
 				// checking for the existence of a name and adding the name
 				System.out.println("User Connected from IP: " + socket.getRemoteSocketAddress() + " !");
 				out.println("Are you registering or logging in?");
-				boolean notloggedin = true;
-				while (notloggedin) {
-					response = in.readLine().toLowerCase().toLowerCase();
+				boolean registering = true;
+				while (true) {
+					response = in.readLine().toLowerCase();
 					if (response == null) {
 						return;
 					} else {
 						switch (response) {
 						case "login":
-							out.println("Enter your details in this format:[Username],[Password]");
-							while (true) {
-								response = in.readLine();
-								if (response == null) {
-									return;
-								} else {
-									if (!response.contains(",")) {
-										out.println("Please enter a password!");
-										break;
-									}
-									String[] userpass = response.split(",");
-									player = new Player(userpass[0], out);
-									try {
-										player.load();
-									} catch (PlayerDoesNotExist e) {
-										player.send(e.getMessage());
-										player.send("Are you registering or logging in?");
-										break;
-									}
-									if (player.authenticate(userpass[1])) {
-										try {
-											players.add(player);
-											notloggedin = false;
-										} catch (AlreadyConnected e){
-											player.send(e.getMessage());
-											player.send("Are you registering or logging in?");
-										}
-										break;
-									} else {
-										player.send("Wrong password!");
-										player.send("Are you registering or logging in?");
-										break;
-									}
-
-								}
-							}
-
+							registering = false;
 							break;
 						case "register":
-							out.println("Enter your details in this format:[Username],[Password]");
-							while (true) {
-								response = in.readLine();
-								if (response == null) {
-									return;
-								} else {
-									if (!response.contains(",")) {
-										out.println("Please enter a password!");
-										break;
-									}
-									String[] userpass = response.split(",");
-									player = new Player(userpass[0], out);
-									try {
-										player.register(userpass[1]);
-										players.add(player);
-										System.out.println("IP " + socket.getRemoteSocketAddress() + " logged in as "
-												+ player.getUsername());
-										notloggedin = false;
-									} catch (PlayerAlreadyExists e) {
-										player.send(e.getMessage());
-										player.send("Are you registering or logging in?");
-									} catch (AlreadyConnected e){
-										//Unreachable code, shh bby is ok.
-									}
-									break;
-								}
+							registering = true;
+							break;
+						}
+					}
+					break;
+				}
+				loggedin:
+				while(true){
+					out.println("Enter your details in this format:[Username],[Password]");
+					while (true) {
+						response = in.readLine();
+						if (response == null) {
+							return;
+						} else {
+							if (!response.contains(",")) {
+								out.println("Please enter a password!");
+								break;
+							}
+							String[] userpass = response.split(",");
+							try {
+								player = new Player(registering, userpass[0], userpass[1], out);
+								players.add(player);
+								System.out.println("IP " + socket.getRemoteSocketAddress() + " logged in as "
+										+ player.getUsername());
+								break loggedin;
+							} catch (PlayerAlreadyExists|AlreadyConnected|PlayerDoesNotExist|WrongPassword e) {//FIXME Crashes when caught?
+								player.send(e.getMessage());
+								player.send("Are you registering or logging in?");
+								break;
 							}
 						}
 					}
@@ -154,6 +122,7 @@ public class Main {
 				}
 				player.send("Logged in as " + player.getUsername());
 				while (true) {
+					Sector.initializeSector(player.getLocation());
 					//Print player screen.
 					new Screen(player);
 					while (true) {
@@ -165,65 +134,39 @@ public class Main {
 								? response.toLowerCase().substring(0, response.indexOf(" ")) : response.toLowerCase();
 						switch (firstresponse) {
 						case "y":
-							int maploc = player.getLocation();
-							int mapn = (maploc - 100);
-							int maps = maploc + 100;
-							int mape = maploc + 1; // how the fuck does increment
-													// operators work
-							int mapw = maploc - 1;
-							int mapne = mapn + 1;
-							int mapse = maps + 1;
-							int mapsw = maps - 1;
-							int mapnw = mapn - 1;
-							if (((maploc % 100) <= 1)){ //T R U L Y S P H E R I C A L B O I S
-								switch (maploc % 100){
-								case 0:
-									mape = maploc - 99;
-									break;
-								case 1:
-									mapw = maploc + 99;
-									break;
-								}
-							}else{
-								if (maploc <=100){
-									mapn = maploc + 50;
-								}
-								if (maploc >= 9900){
-									maps = maploc + 50;
-								}
-							} //TODO Refactor this into a class with an integer Array.
 							int warp = 0;
 							switch (player.getScreen()) {
 							case WARP:
+								HashMap<String, Integer> sectors = Sector.getSurroundingSectors(player.getLocation());
 								boolean warped = true;
 								switch (player.getMapCursor()) {
 								case 1:
-									warp = mapnw;
+									warp = sectors.get("mapnw");
 									break;
 								case 2:
-									warp = mapn;
+									warp = sectors.get("mapn");
 									break;
 								case 3:
-									warp = mapne;
+									warp = sectors.get("mapne");
 									break;
 								case 4:
-									warp = mapw;
+									warp = sectors.get("mape");
 									break;
 								case 5:
 									player.send("You are already here!");
 									warped = false;
 									break;
 								case 6:
-									warp = mape;
+									warp = sectors.get("mapw");
 									break;
 								case 7:
-									warp = mapsw;
+									warp = sectors.get("mapsw");
 									break;
 								case 8:
-									warp = maps;
+									warp = sectors.get("maps");
 									break;
 								case 9:
-									warp = mapse;
+									warp = sectors.get("mapse");
 									break;
 								}
 								// TODO Ship warp delay.
