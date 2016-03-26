@@ -24,40 +24,41 @@ public class Player {
 	public boolean cannotChat;
 	private LocationInSector locationInSector;
 
-	public Player(Boolean Registering, String username, String password, PrintWriter o) throws PlayerAlreadyExists, PlayerDoesNotExist, WrongPassword {
+	public Player(Boolean Registering, String username, String password, PrintWriter o)
+			throws PlayerAlreadyExists, PlayerDoesNotExist, WrongPassword {
 		this.username = username;
 		out = o;
 		cannotChat = false;
 		chatMode = ChatMode.NOTINCHAT;
 		try {
-		if (Registering) {
-			if(!Main.server.database.Query("SELECT * FROM Players WHERE Username = '"+ username+"'").next()){
-				Main.server.database.Update("INSERT INTO Players (Username, Password, Money, Location, Inventory) "
-						+ "VALUES ( '"
-						+ username + "', "
-						+ password.hashCode()+", "
-						+ Main.server.prop.getProperty("starting.money")+", "
-						+ "NULL, "
-						+ "NULL )");
-				return;
-			} else {
-				throw new PlayerAlreadyExists(username);
+			if (Registering) {
+				if (!Main.server.database.Query("SELECT * FROM Players WHERE Username = '" + this.username + "'")
+						.next()) {
+					Main.server.database.Update("INSERT INTO Players (Username, Password, Money, Location, Inventory) "
+							+ "VALUES ( '" + this.username + "', " + password.hashCode() + ", "
+							+ Main.server.prop.getProperty("starting.money") + ", " + "NULL, " + "NULL )");
+					return;
+				} else {
+					throw new PlayerAlreadyExists(this.username);
+				}
 			}
-		} else {
-			if(Main.server.database.Query("SELECT * FROM Players WHERE Username = '"+ username+"'").next()){
-				if (!(password.hashCode()== Main.server.database.Query("SELECT Password FROM Players WHERE Username = '"+ username+"';").getInt("Password"))) {
-						throw new WrongPassword();
+			if (Main.server.database.Query("SELECT * FROM Players WHERE Username = '" + this.username + "'").next()) {
+				if (!(password.hashCode() == Main.server.database
+						.Query("SELECT Password FROM Players WHERE Username = '" + this.username + "';")
+						.getInt("Password"))) {
+					throw new WrongPassword();
 				} else {
 					return;
 				}
 			} else {
-				throw new PlayerDoesNotExist(username);
+				throw new PlayerDoesNotExist(this.username);
 			}
-		}
+
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
+
 	public String getShip() {
 		return ship;
 	}
@@ -65,22 +66,18 @@ public class Player {
 	public int getLocation() {
 		int a = 0;
 		try {
-			a=Main
-					.server
-					.database
-					.Query("SELECT Location "
-							+ "FROM Players "
-							+ "WHERE Username = '"+ username+"'").getInt("Location");
+			a = Main.server.database.Query("SELECT Location " + "FROM Players " + "WHERE Username = '" + username + "'")
+					.getInt("Location");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		return a;
 	}
+
 	public void setLocation(int loc) {
-		Main.server.database.Update("UPDATE Players SET Location = "+loc+" WHERE Username = '"+username+"'");
+		Main.server.database.Update("UPDATE Players SET Location = " + loc + " WHERE Username = '" + username + "'");
 		return;
 	}
-
 
 	public String getUsername() {
 		return this.username;
@@ -92,8 +89,8 @@ public class Player {
 	}
 
 	public void sendChat(Object o) {
-		while(true){
-			if (!cannotChat){
+		while (true) {
+			if (!cannotChat) {
 				out.println(o);
 				break;
 			}
@@ -101,7 +98,7 @@ public class Player {
 		return;
 	}
 
-	public ScreenMode getScreen(){ 
+	public ScreenMode getScreen() {
 		return this.screen;
 	}
 
@@ -112,7 +109,7 @@ public class Player {
 
 	public void setChatStatus(ChatMode mode) {
 		chatMode = mode;
-		switch(mode){
+		switch (mode) {
 		case GROUP:
 			send("Changed chat mode to GROUP");
 			break;
@@ -150,24 +147,27 @@ public class Player {
 	public void setLocationInSector(LocationInSector locationInSector) {
 		this.locationInSector = locationInSector;
 	}
-	public ArrayList<Integer> getInventory(){
+
+	public ArrayList<Integer> getInventory() {
 		return Inventory;
 	}
-	public void addToInventory(int ItemID) throws ItemDoesNotExist{
-		File file = new File("./items/"+ItemID+".properties");
-		if (file.exists()){
+
+	public void addToInventory(int ItemID) throws ItemDoesNotExist {
+		File file = new File("./items/" + ItemID + ".properties");
+		if (file.exists()) {
 			Inventory.add(ItemID);
 		} else {
 			throw new ItemDoesNotExist(ItemID);
 		}
 		return;
 	}
-	public void removeFromInventory(int ItemID) throws ItemDoesNotExist,NotInInventory{
-		File file = new File("./items/"+ItemID+".properties");
-		if (file.exists()){
-			if (Inventory.contains(ItemID)){
+
+	public void removeFromInventory(int ItemID) throws ItemDoesNotExist, NotInInventory {
+		File file = new File("./items/" + ItemID + ".properties");
+		if (file.exists()) {
+			if (Inventory.contains(ItemID)) {
 				Inventory.remove(ItemID);
-			}else{	
+			} else {
 				throw new NotInInventory();
 			}
 		} else {

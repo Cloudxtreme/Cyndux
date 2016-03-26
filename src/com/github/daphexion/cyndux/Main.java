@@ -24,6 +24,7 @@ public class Main {
 	 */
 	public static OnlinePlayers players = new OnlinePlayers();
 	public static Server server;
+
 	/**
 	 * The application main method, which just listens on a port and spawns
 	 * handler threads.
@@ -43,6 +44,7 @@ public class Main {
 		private String response;
 		private Socket socket;
 		private BufferedReader in;
+
 		/**
 		 * Constructs a handler thread, squirreling away the socket. All the
 		 * interesting work is done in the run method.
@@ -68,50 +70,45 @@ public class Main {
 				System.out.println("User Connected from IP: " + socket.getRemoteSocketAddress() + " !");
 				out.println("Are you registering or logging in?");
 				boolean registering = true;
-				while (true) {
-					response = in.readLine().toLowerCase();
-					if (response == null) {
-						return;
-					} else {
-						switch (response) {
-						case "login":
-							registering = false;
-							break;
-						case "register":
-							registering = true;
-							break;
-						}
-					}
-					break;
-				}
-				loggedin:
-				while(true){
-					out.println("Enter your details in this format:[Username],[Password]");
-					while (true) {
-						response = in.readLine();
-						if (response == null) {
-							return;
-						} else {
-							if (!response.contains(",")) {
-								out.println("Please enter a password!");
+				boolean notloggedin = true;
+				while (notloggedin) {
+					response = in.readLine().toLowerCase().substring(0, 1);
+					if (response != null) {
+						if (response.equals("l")||response.equals("r")){
+							switch(response){
+							case "l":
+								registering = false;
+								break;
+							case "r":
+								registering = true;
 								break;
 							}
-							String[] userpass = response.split(",");
-							try {
-								player = new Player(registering, userpass[0], userpass[1], out);
-								players.add(player);
-								System.out.println("IP " + socket.getRemoteSocketAddress() + " logged in as "
-										+ player.getUsername());
-								break loggedin;
-							} catch (PlayerAlreadyExists|AlreadyConnected|PlayerDoesNotExist|WrongPassword e) {//FIXME Crashes when caught?
-								player.send(e.getMessage());
-								player.send("Are you registering or logging in?");
-								break;
+							out.println("Enter your details in this format:[Username],[Password]");
+							while (true) {
+								response = in.readLine();
+								if (response != null) {
+									if (!response.contains(",")) {
+										out.println("Please enter a password!");
+									}else{
+										String[] userpass = response.split(",");
+										try {
+											player = new Player(registering, userpass[0], userpass[1], out);
+											players.add(player);
+											System.out.println(
+													"IP " + socket.getRemoteSocketAddress() + " logged in as " + player.getUsername());
+											notloggedin = false;
+										} catch (PlayerAlreadyExists | AlreadyConnected | PlayerDoesNotExist | WrongPassword e) {
+											out.println(e.getMessage());
+											out.println("Are you registering or logging in?");
+										}
+									}
+									break;
+								}
 							}
 						}
 					}
 				}
-				if (player.getLocation()==0) {
+				if (player.getLocation() == 0) {
 					if (server.prop.getProperty("starting.location").isEmpty()) {
 						Random r = new Random();
 						int randomloc = r.nextInt(10001);
@@ -123,7 +120,7 @@ public class Main {
 				player.send("Logged in as " + player.getUsername());
 				while (true) {
 					Sector.initializeSector(player.getLocation());
-					//Print player screen.
+					// Print player screen.
 					new Screen(player);
 					while (true) {
 						response = in.readLine();
@@ -171,8 +168,7 @@ public class Main {
 								}
 								// TODO Ship warp delay.
 								if (warped) {
-									for (Player plyr : Sector
-											.getPlayersInSector(player.getLocation())) {
+									for (Player plyr : Sector.getPlayersInSector(player.getLocation())) {
 										if (plyr != player) {
 											plyr.sendChat(player.getUsername() + " just left your sector!");
 										}
@@ -227,7 +223,7 @@ public class Main {
 								player.send("Enter something to say!");
 								break;
 							}
-							Chat.main(player,response);
+							Chat.main(player, response);
 							break;
 						case "up":
 							if (player.getScreen() != ScreenMode.MAP) {
@@ -368,7 +364,7 @@ public class Main {
 				} catch (IOException e) {
 					e.printStackTrace();
 				} finally {
-					System.out.println(player.getUsername() + " logged out!");
+					//logged out!'
 				}
 			}
 		}
