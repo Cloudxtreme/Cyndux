@@ -27,7 +27,13 @@ public class DBConnection {
 								+ "Password INT NOT NULL,"
 								+ "Money INT NOT NULL,"
 								+ "Location INT,"
-								+ "Inventory TEXT"
+								+ ")");
+			statement.execute("CREATE TABLE IF NOT EXISTS Inventory ("
+								+ "Username TEXT NOT NULL,"
+								+ "ItemID INT NOT NULL,"
+								+ "Quantity INT NOT NULL,"
+								+ "UNIQUE(Username, ItemID),"
+								+ "FOREIGN KEY(Username) REFERENCES Players(Username)"
 								+ ")");
 			statement.execute("CREATE TABLE IF NOT EXISTS Ships ("
 								+ "Username TEXT NOT NULL,"

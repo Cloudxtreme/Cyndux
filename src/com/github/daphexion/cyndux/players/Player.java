@@ -1,29 +1,28 @@
 package com.github.daphexion.cyndux.players;
 
-import java.io.File;
+//import java.io.File;
 import java.io.PrintWriter;
 import java.sql.SQLException;
-import java.util.ArrayList;
+//import java.util.ArrayList;
 import com.github.daphexion.cyndux.Main;
-import com.github.daphexion.cyndux.exceptions.ItemDoesNotExist;
-import com.github.daphexion.cyndux.exceptions.NotInInventory;
+//import com.github.daphexion.cyndux.exceptions.ItemDoesNotExist;
+//import com.github.daphexion.cyndux.exceptions.NotInInventory;
 import com.github.daphexion.cyndux.exceptions.PlayerAlreadyExists;
 import com.github.daphexion.cyndux.exceptions.PlayerDoesNotExist;
 import com.github.daphexion.cyndux.exceptions.WrongPassword;
 import com.github.daphexion.cyndux.screen.ScreenMode;
 import com.github.daphexion.cyndux.sectors.LocationInSector;
+import com.github.daphexion.cyndux.ships.Ship;
 
 public class Player {
 	private String username;
-	private ArrayList<Integer> Inventory = new ArrayList<Integer>();
-	private String ship;
 	private ChatMode chatMode;
 	PrintWriter out;
 	private ScreenMode screen = ScreenMode.MAIN;
 	private byte mapcursor = 5;
 	public boolean cannotChat;
 	private LocationInSector locationInSector;
-
+	public Ship ship;
 	public Player(Boolean Registering, String username, String password, PrintWriter o)
 			throws PlayerAlreadyExists, PlayerDoesNotExist, WrongPassword {
 		this.username = username;
@@ -59,7 +58,7 @@ public class Player {
 		}
 	}
 
-	public String getShip() {
+	public Ship getShip() {
 		return ship;
 	}
 
@@ -146,33 +145,5 @@ public class Player {
 
 	public void setLocationInSector(LocationInSector locationInSector) {
 		this.locationInSector = locationInSector;
-	}
-
-	public ArrayList<Integer> getInventory() {
-		return Inventory;
-	}
-
-	public void addToInventory(int ItemID) throws ItemDoesNotExist {
-		File file = new File("./items/" + ItemID + ".properties");
-		if (file.exists()) {
-			Inventory.add(ItemID);
-		} else {
-			throw new ItemDoesNotExist(ItemID);
-		}
-		return;
-	}
-
-	public void removeFromInventory(int ItemID) throws ItemDoesNotExist, NotInInventory {
-		File file = new File("./items/" + ItemID + ".properties");
-		if (file.exists()) {
-			if (Inventory.contains(ItemID)) {
-				Inventory.remove(ItemID);
-			} else {
-				throw new NotInInventory();
-			}
-		} else {
-			throw new ItemDoesNotExist(ItemID);
-		}
-		return;
 	}
 }

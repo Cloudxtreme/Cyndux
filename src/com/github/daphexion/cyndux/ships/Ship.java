@@ -14,8 +14,10 @@ import com.github.daphexion.cyndux.players.Player;
 public class Ship {
 	private Player player;
 	Properties shipProp = new Properties();
-	public Ship(Player player) {
+	String Ship;
+	public Ship(Player player,String Ship) {
 		this.player = player;
+		this.Ship = Ship;
 
 	}
 
@@ -25,7 +27,7 @@ public class Ship {
 			if (!shipProp.getProperty("compatibility").equals(Item.getCompatiblity(ItemID))) {
 				output.flush();
 				output.close();
-				throw new IncompatiblePart(ItemID,player.getShip());
+				throw new IncompatiblePart(ItemID,Ship);
 			} else {
 				if (!Item.getSlot(ItemID).equals(slot.getSlot())) {
 				} else {
