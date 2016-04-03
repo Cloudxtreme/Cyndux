@@ -3,6 +3,8 @@ package com.github.daphexion.cyndux.players;
 //import java.io.File;
 import java.io.PrintWriter;
 import java.sql.SQLException;
+import java.util.ArrayList;
+
 //import java.util.ArrayList;
 import com.github.daphexion.cyndux.Main;
 //import com.github.daphexion.cyndux.exceptions.ItemDoesNotExist;
@@ -17,12 +19,13 @@ import com.github.daphexion.cyndux.ships.Ship;
 public class Player {
 	private String username;
 	private ChatMode chatMode;
-	PrintWriter out;
+	private PrintWriter out;
 	private ScreenMode screen = ScreenMode.MAIN;
 	private byte mapcursor = 5;
 	public boolean cannotChat;
 	private LocationInSector locationInSector;
 	public Ship ship;
+	public Inventory inventory;
 	public Player(Boolean Registering, String username, String password, PrintWriter o)
 			throws PlayerAlreadyExists, PlayerDoesNotExist, WrongPassword {
 		this.username = username;
@@ -57,7 +60,6 @@ public class Player {
 			e.printStackTrace();
 		}
 	}
-
 	public Ship getShip() {
 		return ship;
 	}

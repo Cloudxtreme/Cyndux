@@ -1,3 +1,4 @@
+//Credits to Ray Toal, for his multi-user chat code. Couldn't have done it without him.
 package com.github.daphexion.cyndux;
 
 //Import some stuff. One is for the Socket Connection, the other is for writing stuff.
@@ -117,6 +118,7 @@ public class Main {
 						player.setLocation(Integer.parseInt(server.prop.getProperty("starting.location")));
 					}
 				}
+				player.send(ANSI.clear());
 				player.send("Logged in as " + player.getUsername());
 				while (true) {
 					Sector.initializeSector(player.getLocation());

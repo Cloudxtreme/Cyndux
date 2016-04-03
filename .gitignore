@@ -21,3 +21,4 @@ users/*
 *.db
 .exe
 /sqlite3.exe
+/.lint4jprefs
