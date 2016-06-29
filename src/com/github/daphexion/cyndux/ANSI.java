@@ -12,4 +12,7 @@ public class ANSI {
 	public static String clear(){
 		return "\u001B[2J";		
 	}
+	public static String returnCursor(){
+		return "\u001B[H";
+	}
 }
